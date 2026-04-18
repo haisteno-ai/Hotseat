@@ -322,6 +322,7 @@ h1,h2,h3,.display{font-family:'Bebas Neue',sans-serif;}
           </label>
           <button class="copy-prompt-btn" onclick="copyPrompt('ht')">📋 PROMPT</button>
         </div>
+        <button onclick="clearPersistedCSV();restoreCSVLabels();location.reload()" style="width:100%;margin-top:4px;background:rgba(232,19,42,0.15);border:1px solid rgba(232,19,42,0.3);color:rgba(232,19,42,0.8);border-radius:4px;padding:5px;cursor:pointer;font-family:'Bebas Neue';font-size:0.85rem;letter-spacing:1px">🗑️ CLEAR ALL QUESTIONS</button>
       </div>
     </div>
     <!-- Settings -->
@@ -561,6 +562,59 @@ let soundMap = {};
 let soundSets = JSON.parse(localStorage.getItem('hotseat_sound_sets') || '{}');
 let activeSoundSet = null;
 
+const SOUND_MAP_KEY = 'hotseat_sound_map';
+const CSV_KEY = 'hotseat_csv_data';
+
+function persistSoundMap() {
+  try {
+    const serialized = {};
+    for (const [k, v] of Object.entries(soundMap)) {
+      serialized[k] = {name: v.name, dataUrl: v.dataUrl};
+    }
+    localStorage.setItem(SOUND_MAP_KEY, JSON.stringify(serialized));
+  } catch(e) { console.warn('Sound map too large to persist:', e); }
+}
+
+function restoreSoundMap() {
+  try {
+    const raw = localStorage.getItem(SOUND_MAP_KEY);
+    if (!raw) return;
+    const serialized = JSON.parse(raw);
+    for (const [k, v] of Object.entries(serialized)) {
+      const audio = new Audio(v.dataUrl);
+      soundMap[k] = {name: v.name, dataUrl: v.dataUrl, audio};
+    }
+  } catch(e) {}
+}
+
+function persistCSV() {
+  try {
+    localStorage.setItem(CSV_KEY, JSON.stringify({csvQa, csvMc, csvHt}));
+  } catch(e) { console.warn('CSV data too large to persist:', e); }
+}
+
+function restoreCSV() {
+  try {
+    const raw = localStorage.getItem(CSV_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved.csvQa && saved.csvQa.length > 0) {
+      csvQa = saved.csvQa;
+    }
+    if (saved.csvMc && saved.csvMc.length > 0) {
+      csvMc = saved.csvMc;
+    }
+    if (saved.csvHt && saved.csvHt.length > 0) {
+      csvHt = saved.csvHt;
+    }
+  } catch(e) {}
+}
+
+function clearPersistedCSV() {
+  csvQa = []; csvMc = []; csvHt = [];
+  localStorage.removeItem(CSV_KEY);
+}
+
 function playSnd(slotId) {
   try {
     const s = soundMap[slotId];
@@ -582,6 +636,7 @@ function loadSoundFile(slotId, file) {
     const dataUrl = e.target.result;
     const audio = new Audio(dataUrl);
     soundMap[slotId] = {name: file.name, dataUrl, audio};
+    persistSoundMap();
     renderSoundGrid();
   };
   reader.readAsDataURL(file);
@@ -589,6 +644,7 @@ function loadSoundFile(slotId, file) {
 
 function clearSound(slotId) {
   delete soundMap[slotId];
+  persistSoundMap();
   renderSoundGrid();
 }
 
@@ -596,6 +652,7 @@ function clearAllSounds() {
   if (!confirm('Clear all sound effects?')) return;
   soundMap = {};
   activeSoundSet = null;
+  persistSoundMap();
   renderSoundGrid();
   renderSoundSetChips();
 }
@@ -624,6 +681,7 @@ function loadSoundSet(setName) {
     soundMap[k] = {name: v.name, dataUrl: v.dataUrl, audio};
   }
   activeSoundSet = setName;
+  persistSoundMap();
   renderSoundGrid();
   renderSoundSetChips();
 }
@@ -967,9 +1025,7 @@ function loadCSV(evt, type) {
     if (type === 'ht') {
       const newItems = lines.filter(l=>l.toLowerCase()!=='prompt').map(l=>l.trim());
       csvHt = [...csvHt, ...newItems];
-      const lbl = $('csvHtLabel');
-      lbl.classList.add('loaded');
-      lbl.innerHTML = `✅ Hot Takes: ${csvHt.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'ht')" style="display:none">`;
+      updateCSVLabel('csvHtLabel', 'ht', `✅ Hot Takes: ${csvHt.length} loaded`);
     } else {
       // Parse CSV properly (handles quoted commas)
       const rows = lines.slice(1).map(l => {
@@ -978,18 +1034,27 @@ function loadCSV(evt, type) {
       }).filter(r=>r.question);
       if (type === 'qa') {
         csvQa = [...csvQa, ...rows];
-        const lbl = $('csvQaLabel');
-        lbl.classList.add('loaded');
-        lbl.innerHTML = `✅ QA Trivia: ${csvQa.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'qa')" style="display:none">`;
+        updateCSVLabel('csvQaLabel', 'qa', `✅ QA Trivia: ${csvQa.length} loaded`);
       } else {
         csvMc = [...csvMc, ...rows];
-        const lbl = $('csvMcLabel');
-        lbl.classList.add('loaded');
-        lbl.innerHTML = `✅ MC Trivia: ${csvMc.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'mc')" style="display:none">`;
+        updateCSVLabel('csvMcLabel', 'mc', `✅ MC Trivia: ${csvMc.length} loaded`);
       }
     }
+    persistCSV();
   };
   reader.readAsText(file);
+}
+
+function updateCSVLabel(lblId, type, text) {
+  const lbl = $(lblId);
+  lbl.classList.add('loaded');
+  lbl.innerHTML = `${text}<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'${type}')" style="display:none">`;
+}
+
+function restoreCSVLabels() {
+  if (csvQa.length > 0) updateCSVLabel('csvQaLabel', 'qa', `✅ QA Trivia: ${csvQa.length} loaded`);
+  if (csvMc.length > 0) updateCSVLabel('csvMcLabel', 'mc', `✅ MC Trivia: ${csvMc.length} loaded`);
+  if (csvHt.length > 0) updateCSVLabel('csvHtLabel', 'ht', `✅ Hot Takes: ${csvHt.length} loaded`);
 }
 
 function parseCSVLine(line) {
@@ -2660,6 +2725,11 @@ function resumeGame() {
 // ============================================================
 window.addEventListener('load', () => {
   $('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') addPlayer(); });
+
+  // Restore persisted sounds and CSV data immediately
+  restoreSoundMap();
+  restoreCSV();
+  restoreCSVLabels();
 
   // Reset button
   const resetBtn = document.createElement('button');
