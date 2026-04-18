@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🔥 HOT SEAT</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#e8132a; --gold:#ffd700; --blue:#1565c0; --green:#00c853;
+  --orange:#ff6d00; --purple:#7b1fa2; --pink:#e91e8c;
+  --bg:#0a0a0a; --text:#f0f0f0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow Condensed',sans-serif;background:var(--bg);color:var(--text);touch-action:manipulation;overflow:hidden;height:100vh;width:100vw;user-select:none;}
+h1,h2,h3,.display{font-family:'Bebas Neue',sans-serif;}
+
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.3s;z-index:10;}
+.screen.off{display:none;}
+.screen{background:radial-gradient(ellipse at 30% 20%,rgba(232,19,42,0.15) 0%,transparent 50%),
+         radial-gradient(ellipse at 70% 80%,rgba(21,101,192,0.15) 0%,transparent 50%),
+         radial-gradient(ellipse at 50% 50%,rgba(255,215,0,0.05) 0%,transparent 70%),#0a0a0a;}
+
+.btn{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;padding:14px 32px;border:none;border-radius:4px;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;touch-action:manipulation;}
+.btn:active{transform:scale(0.96);}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(232,19,42,0.4);}
+.btn-gold{background:var(--gold);color:#000;box-shadow:0 4px 20px rgba(255,215,0,0.4);}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 4px 20px rgba(21,101,192,0.4);}
+.btn-green{background:var(--green);color:#000;box-shadow:0 4px 20px rgba(0,200,83,0.4);}
+.btn-purple{background:var(--purple);color:#fff;box-shadow:0 4px 20px rgba(123,31,162,0.4);}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:0 4px 20px rgba(255,109,0,0.4);}
+.btn-ghost{background:transparent;color:var(--gold);border:2px solid var(--gold);}
+.btn-dark{background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);}
+.btn-sm{font-size:1rem;padding:8px 18px;}
+
+/* ===== SETUP ===== */
+#sSetup{padding:20px;overflow-y:auto;justify-content:flex-start;padding-top:20px;}
+#sSetup .logo{font-family:'Bebas Neue';font-size:4rem;color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,0.5);letter-spacing:4px;margin-bottom:2px;}
+#sSetup .tagline{font-size:1rem;color:rgba(255,255,255,0.5);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:760px;}
+.setup-panel{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:14px;}
+.setup-panel h3{font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold);letter-spacing:2px;margin-bottom:10px;}
+.name-input-row{display:flex;gap:8px;margin-bottom:8px;}
+.name-input-row input{flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;font-family:'Barlow Condensed';font-size:1rem;padding:8px 12px;}
+.name-input-row input::placeholder{color:rgba(255,255,255,0.3);}
+.name-input-row button{background:var(--red);color:#fff;border:none;border-radius:4px;padding:8px 12px;cursor:pointer;font-size:1rem;font-family:'Bebas Neue';}
+.player-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);border-radius:20px;padding:4px 12px;margin:3px;font-size:0.9rem;}
+.player-tag button{background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:0.8rem;}
+.csv-upload-group{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+.csv-label{display:block;background:rgba(255,255,255,0.07);border:2px dashed rgba(255,255,255,0.2);border-radius:6px;padding:10px;text-align:center;cursor:pointer;font-size:0.8rem;color:rgba(255,255,255,0.6);transition:border-color 0.2s;flex:1;}
+.csv-label:hover{border-color:var(--gold);color:var(--gold);}
+.csv-label.loaded{border-color:var(--green);color:var(--green);border-style:solid;}
+.csv-label input{display:none;}
+.copy-prompt-btn{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:var(--gold);border-radius:4px;padding:6px 10px;cursor:pointer;font-size:0.75rem;font-family:'Bebas Neue';letter-spacing:1px;white-space:nowrap;}
+.settings-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.95rem;}
+.settings-row select,.settings-row input[type=number]{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;padding:6px 10px;font-family:'Barlow Condensed';font-size:0.9rem;width:140px;}
+#startBtn{width:100%;max-width:760px;margin-top:12px;font-size:1.8rem;padding:16px;}
+
+/* ===== WHEEL ===== */
+#sWheel{flex-direction:column;gap:10px;}
+#wheelTitle{font-family:'Bebas Neue';font-size:2.5rem;color:var(--gold);letter-spacing:3px;}
+#wheelCanvas{border-radius:50%;box-shadow:0 0 60px rgba(255,215,0,0.3);}
+#wheelPointer{font-size:2.5rem;line-height:1;margin-bottom:-8px;}
+#spinBtn{font-size:1.6rem;padding:16px 48px;}
+#wheelSubtext{font-size:1rem;color:rgba(255,255,255,0.5);letter-spacing:2px;min-height:1.4rem;}
+#catchingUpMsg{font-size:0.85rem;color:var(--orange);letter-spacing:1px;text-align:center;min-height:1.2rem;}
+
+/* Crybaby */
+#crybabyBtn{position:fixed;bottom:20px;right:20px;font-family:'Bebas Neue';font-size:1rem;background:rgba(255,109,0,0.2);border:2px solid var(--orange);color:var(--orange);border-radius:40px;padding:10px 18px;cursor:pointer;z-index:100;letter-spacing:1px;touch-action:manipulation;}
+
+/* ===== HOT SEAT FLASH ===== */
+#sHotSeat{background:radial-gradient(ellipse at center,rgba(232,19,42,0.4) 0%,#0a0a0a 70%) !important;text-align:center;}
+#hsName{font-family:'Bebas Neue';font-size:clamp(3rem,12vw,7rem);color:var(--gold);text-shadow:0 0 40px rgba(255,215,0,0.6);animation:hsFlash 0.5s ease infinite alternate;}
+#hsTitle{font-family:'Bebas Neue';font-size:clamp(1.5rem,6vw,3rem);color:var(--red);letter-spacing:4px;margin-top:8px;}
+#hsBalance{font-size:1.4rem;color:rgba(255,255,255,0.7);margin-top:12px;letter-spacing:2px;}
+#hsPowerUps{font-size:1.8rem;margin-top:8px;letter-spacing:4px;}
+@keyframes hsFlash{from{text-shadow:0 0 40px rgba(255,215,0,0.6);}to{text-shadow:0 0 80px rgba(255,215,0,1),0 0 120px rgba(255,215,0,0.4);}}
+
+/* ===== SABOTAGE REVEAL ===== */
+#sSabotageReveal{background:radial-gradient(ellipse at center,rgba(200,0,0,0.6) 0%,#0a0a0a 70%) !important;text-align:center;gap:16px;}
+#sabTitle{font-family:'Bebas Neue';font-size:clamp(2.5rem,10vw,5rem);color:#ff0000;text-shadow:0 0 40px rgba(255,0,0,0.8);animation:sabPulse 0.4s ease infinite alternate;}
+#sabSub{font-size:1.3rem;color:rgba(255,255,255,0.8);max-width:420px;text-align:center;line-height:1.4;}
+@keyframes sabPulse{from{text-shadow:0 0 20px rgba(255,0,0,0.8);}to{text-shadow:0 0 60px rgba(255,0,0,1),0 0 100px rgba(255,0,0,0.5);}}
+
+/* ===== CAT FLASH ===== */
+#sCatFlash{text-align:center;}
+#cfEmoji{font-size:5rem;margin-bottom:10px;animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+#cfCategory{font-family:'Bebas Neue';font-size:clamp(2rem,8vw,4.5rem);color:var(--gold);letter-spacing:3px;}
+#cfPlayer{font-size:1.2rem;color:rgba(255,255,255,0.6);margin-top:8px;letter-spacing:2px;}
+#cfDesc{font-size:1rem;color:rgba(255,255,255,0.5);margin-top:6px;max-width:400px;text-align:center;}
+#cfContinue{margin-top:16px;}
+@keyframes popIn{from{transform:scale(0.3);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* ===== POWER-UP WHEEL ===== */
+#sPowerUpWheel{flex-direction:column;gap:12px;text-align:center;}
+#puTitle{font-family:'Bebas Neue';font-size:2.5rem;color:var(--purple);letter-spacing:3px;text-shadow:0 0 20px rgba(123,31,162,0.6);}
+#puSubtitle{font-size:1rem;color:rgba(255,255,255,0.5);letter-spacing:2px;}
+#puCanvas{border-radius:50%;box-shadow:0 0 60px rgba(123,31,162,0.4);}
+#puPointer{font-size:2.5rem;line-height:1;margin-bottom:-8px;}
+
+/* ===== CHALLENGE ===== */
+#sChallenge{padding:20px;text-align:center;gap:14px;}
+#chalHeader{font-family:'Bebas Neue';font-size:1.8rem;color:var(--gold);letter-spacing:2px;}
+#chalPlayerName{font-size:1.1rem;color:rgba(255,255,255,0.5);letter-spacing:2px;}
+#chalQuestion{font-size:clamp(1.2rem,4vw,1.7rem);color:#fff;max-width:600px;line-height:1.4;font-weight:600;}
+#chalChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:500px;}
+.choice-btn{font-family:'Barlow Condensed';font-size:1.1rem;font-weight:600;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;padding:14px 10px;cursor:pointer;transition:background 0.2s,border-color 0.2s;touch-action:manipulation;}
+.choice-btn:hover{background:rgba(255,255,255,0.15);}
+.choice-btn.correct{background:rgba(0,200,83,0.3);border-color:var(--green);color:var(--green);}
+.choice-btn.wrong{background:rgba(232,19,42,0.3);border-color:var(--red);color:var(--red);}
+#chalAnswer{font-size:1.3rem;color:var(--green);font-weight:700;display:none;}
+#chalActions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+#chalExtra{width:100%;text-align:center;}
+
+/* Peek countdown overlay */
+#peekOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:500;text-align:center;gap:16px;}
+#peekAnswer{font-family:'Bebas Neue';font-size:clamp(2rem,8vw,5rem);color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,0.6);}
+#peekCountdown{font-family:'Bebas Neue';font-size:3rem;color:var(--red);}
+#peekLabel{font-size:1.2rem;color:rgba(255,255,255,0.6);letter-spacing:2px;}
+
+/* Timer */
+#timer{font-family:'Bebas Neue';font-size:3rem;color:var(--gold);width:80px;height:80px;border-radius:50%;border:4px solid var(--gold);display:flex;align-items:center;justify-content:center;transition:color 0.3s,border-color 0.3s;}
+#timer.urgent{color:var(--red);border-color:var(--red);animation:timerPulse 0.5s ease infinite alternate;}
+@keyframes timerPulse{from{transform:scale(1);}to{transform:scale(1.1);box-shadow:0 0 20px rgba(232,19,42,0.6);}}
+
+/* Power-Up Use Bar */
+#powerUpBar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.85);border-top:2px solid rgba(123,31,162,0.5);padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:200;flex-wrap:wrap;}
+#powerUpBar.off{display:none;}
+.pu-use-btn{font-family:'Bebas Neue';font-size:0.85rem;letter-spacing:1px;background:rgba(123,31,162,0.3);border:1px solid var(--purple);color:#fff;border-radius:20px;padding:8px 14px;cursor:pointer;transition:background 0.2s;}
+.pu-use-btn:hover{background:rgba(123,31,162,0.6);}
+#powerUpBarLabel{font-size:0.75rem;color:rgba(255,255,255,0.4);letter-spacing:1px;}
+
+/* ===== RESULT ===== */
+#sResult{text-align:center;gap:12px;}
+#resultPlayer{font-family:'Bebas Neue';font-size:1.5rem;color:rgba(255,255,255,0.7);}
+#resultLabel{font-family:'Bebas Neue';font-size:2rem;letter-spacing:2px;}
+#resultAmount{font-family:'Bebas Neue';font-size:clamp(3rem,10vw,5rem);}
+#resultAmount.win{color:var(--green);text-shadow:0 0 30px rgba(0,200,83,0.5);}
+#resultAmount.loss{color:var(--red);text-shadow:0 0 30px rgba(232,19,42,0.5);}
+#resultBalance{font-size:1.1rem;color:rgba(255,255,255,0.5);}
+
+/* ===== MULTIPLIER ===== */
+#sMultiplier{text-align:center;}
+#multLabel{font-family:'Bebas Neue';font-size:1.5rem;color:rgba(255,255,255,0.7);letter-spacing:2px;}
+#multValue{font-family:'Bebas Neue';font-size:clamp(5rem,20vw,12rem);color:var(--gold);animation:multPop 0.5s cubic-bezier(0.34,1.56,0.64,1);text-shadow:0 0 60px rgba(255,215,0,0.8);}
+#multPlayerNote{font-size:1rem;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-top:8px;}
+@keyframes multPop{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* ===== KILL SHOT ===== */
+#sKillShot{text-align:center;gap:16px;}
+#ksTitle{font-family:'Bebas Neue';font-size:3.5rem;color:var(--red);letter-spacing:3px;text-shadow:0 0 30px rgba(232,19,42,0.6);}
+#ksPlayer{font-family:'Bebas Neue';font-size:1.8rem;color:var(--gold);}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+
+/* ===== LEADERBOARD ===== */
+#sLeaderboard{padding:20px;overflow-y:auto;justify-content:flex-start;padding-top:20px;}
+#lbTitle{font-family:'Bebas Neue';font-size:2rem;color:var(--gold);letter-spacing:3px;margin-bottom:12px;}
+#lbList{width:100%;max-width:600px;}
+.lb-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px 12px;margin-bottom:6px;position:relative;overflow:hidden;}
+.lb-row.eliminated{opacity:0.4;}
+.lb-row.lb-leader{border-color:var(--gold);background:rgba(255,215,0,0.08);}
+.lb-rank{font-family:'Bebas Neue';font-size:1.5rem;color:rgba(255,255,255,0.3);min-width:28px;}
+.lb-name{font-family:'Bebas Neue';font-size:1.2rem;flex:1;}
+.lb-spins{font-size:0.8rem;color:rgba(255,255,255,0.3);letter-spacing:1px;}
+.lb-powerups{font-size:1rem;letter-spacing:2px;min-width:40px;}
+.lb-badges{font-size:0.9rem;}
+.lb-streak{font-size:0.9rem;color:var(--orange);}
+.lb-bal{font-family:'Bebas Neue';font-size:1.4rem;color:var(--gold);}
+.lb-bar{position:absolute;bottom:0;left:0;height:3px;background:var(--gold);opacity:0.4;transition:width 0.5s;}
+
+/* ===== ORACLE ===== */
+#sOracle{text-align:center;gap:16px;}
+#oracleEye{font-size:4rem;animation:oraclePulse 2s ease infinite;}
+#oracleTitle{font-family:'Bebas Neue';font-size:2.5rem;color:var(--purple);letter-spacing:3px;}
+#oraclePrediction{font-size:1.3rem;color:rgba(255,255,255,0.8);max-width:400px;line-height:1.5;font-style:italic;}
+@keyframes oraclePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+
+/* ===== SECOND LIFE ===== */
+#sSecondLife{text-align:center;gap:16px;}
+#slTitle{font-family:'Bebas Neue';font-size:3rem;color:var(--green);letter-spacing:3px;}
+#slPlayer{font-family:'Bebas Neue';font-size:2rem;color:var(--gold);}
+
+/* ===== WINNER ===== */
+#sWinner{text-align:center;overflow:hidden;}
+#confettiContainer{position:absolute;inset:0;pointer-events:none;}
+.confetti{position:absolute;border-radius:2px;animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+#winTitle{font-family:'Bebas Neue';font-size:clamp(2rem,8vw,4rem);color:rgba(255,215,0,0.7);letter-spacing:4px;position:relative;}
+#winName{font-family:'Bebas Neue';font-size:clamp(4rem,15vw,9rem);color:var(--gold);text-shadow:0 0 60px rgba(255,215,0,0.8);position:relative;animation:winPop 0.6s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes winPop{from{transform:scale(0.2);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+/* ===== CRYBABY ===== */
+#sCrybaby{text-align:center;gap:16px;}
+#cbTitle{font-family:'Bebas Neue';font-size:3rem;color:var(--orange);letter-spacing:3px;}
+#cbPlayer{font-family:'Bebas Neue';font-size:2rem;color:var(--gold);}
+#cbCoin{font-size:4rem;animation:coinSpin 0.3s linear infinite;}
+@keyframes coinSpin{from{transform:rotateY(0);}to{transform:rotateY(360deg);}}
+#cbResult{font-size:1.2rem;font-weight:700;}
+
+/* ===== PICK MODAL ===== */
+#pickModal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:500;}
+#pickModal.off{display:none;}
+#pickModalInner{background:#111;border:2px solid var(--gold);border-radius:12px;padding:24px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto;}
+#pickModalTitle{font-family:'Bebas Neue';font-size:1.8rem;color:var(--gold);letter-spacing:2px;margin-bottom:16px;text-align:center;}
+.pick-btn{display:block;width:100%;text-align:left;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);color:#fff;border-radius:6px;padding:12px 16px;margin-bottom:8px;cursor:pointer;font-family:'Barlow Condensed';font-size:1.1rem;transition:background 0.15s;}
+.pick-btn:hover{background:rgba(255,215,0,0.15);border-color:var(--gold);}
+#pickModalCancel{text-align:center;margin-top:12px;color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.9rem;letter-spacing:1px;}
+
+/* ===== ELIM OVERLAY ===== */
+#elimOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:400;text-align:center;gap:12px;}
+#elimName{font-family:'Bebas Neue';font-size:3.5rem;color:var(--red);letter-spacing:3px;}
+#elimMsg{font-family:'Bebas Neue';font-size:1.5rem;color:rgba(255,255,255,0.6);letter-spacing:3px;}
+
+/* ===== TOASTS ===== */
+#streakToast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,109,0,0.95);color:#fff;font-family:'Bebas Neue';font-size:1.3rem;letter-spacing:2px;padding:12px 24px;border-radius:40px;z-index:300;display:none;}
+#taxDodgeToast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(0,200,83,0.95);color:#000;font-family:'Bebas Neue';font-size:1.2rem;letter-spacing:2px;padding:10px 22px;border-radius:40px;z-index:300;display:none;}
+
+/* ===== LEADER HUD ===== */
+#leaderHud{position:absolute;top:16px;right:16px;text-align:right;background:rgba(0,0,0,0.5);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:8px 14px;display:none;}
+
+/* ===== SOUND SETTINGS SCREEN ===== */
+#sSoundSettings{padding:16px;overflow-y:auto;justify-content:flex-start;padding-top:16px;}
+#sSoundSettings h2{font-family:'Bebas Neue';font-size:2rem;color:var(--gold);letter-spacing:3px;margin-bottom:4px;}
+#sSoundSettings .snd-tagline{font-size:0.9rem;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:16px;}
+.snd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:800px;}
+.snd-panel{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;}
+.snd-panel h4{font-family:'Bebas Neue';font-size:1rem;color:var(--gold);letter-spacing:2px;margin-bottom:8px;}
+.snd-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:0.85rem;}
+.snd-row label{flex:1;color:rgba(255,255,255,0.7);}
+.snd-row .snd-file-btn{background:rgba(255,255,255,0.08);border:1px dashed rgba(255,255,255,0.25);color:rgba(255,255,255,0.5);border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.75rem;white-space:nowrap;font-family:'Bebas Neue';letter-spacing:1px;transition:border-color 0.2s;}
+.snd-row .snd-file-btn.has-sound{border-style:solid;border-color:var(--green);color:var(--green);}
+.snd-row .snd-file-btn input{display:none;}
+.snd-row .snd-play-btn{background:none;border:none;color:var(--gold);cursor:pointer;font-size:0.9rem;padding:2px 4px;}
+.snd-row .snd-clear-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:0.8rem;padding:2px 4px;}
+.snd-sets-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;width:100%;max-width:800px;align-items:center;}
+.snd-set-chip{font-family:'Bebas Neue';font-size:0.9rem;letter-spacing:1px;padding:6px 14px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);background:rgba(255,215,0,0.1);color:var(--gold);cursor:pointer;}
+.snd-set-chip.active{background:var(--gold);color:#000;}
+.snd-set-chip.del-btn{border-color:rgba(232,19,42,0.4);background:rgba(232,19,42,0.1);color:var(--red);}
+.snd-actions{display:flex;gap:10px;flex-wrap:wrap;width:100%;max-width:800px;margin-top:8px;}
+
+/* Memory grid */
+#memGrid{display:grid;gap:8px;margin:10px 0;}
+.mem-cell{background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.15);border-radius:6px;padding:12px;text-align:center;font-weight:700;font-size:1rem;cursor:pointer;transition:transform 0.1s;}
+.mem-cell.flipped{background:rgba(21,101,192,0.3);border-color:var(--blue);}
+.mem-cell.matched{background:rgba(0,200,83,0.2);border-color:var(--green);}
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div id="streakToast">🔥 HOT STREAK ACTIVE!</div>
+<div id="taxDodgeToast">💸 TAX DODGED!</div>
+
+<!-- CRYBABY BUTTON -->
+<button id="crybabyBtn" onclick="openCrybaby()" style="display:none">👶 CRYBABY</button>
+
+<!-- POWER-UP USE BAR (shown during challenge) -->
+<div id="powerUpBar" class="off">
+  <span id="powerUpBarLabel">YOUR POWER-UPS:</span>
+</div>
+
+<!-- PEEK OVERLAY -->
+<div id="peekOverlay" style="display:none">
+  <div id="peekLabel">MEMORIZE THIS ANSWER!</div>
+  <div id="peekAnswer"></div>
+  <div id="peekCountdown">4</div>
+</div>
+
+<!-- ELIMINATION OVERLAY -->
+<div id="elimOverlay" style="display:none;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="font-size:4rem">💀</div>
+  <div id="elimName"></div>
+  <div id="elimMsg">HAS BEEN ELIMINATED</div>
+  <button class="btn btn-red" onclick="dismissElim()" style="margin-top:12px">CONTINUE</button>
+</div>
+
+<!-- PICK MODAL -->
+<div id="pickModal" class="off">
+  <div id="pickModalInner">
+    <div id="pickModalTitle">SELECT A PLAYER</div>
+    <div id="pickModalList"></div>
+    <div id="pickModalCancel" onclick="closePickModal()">CANCEL</div>
+  </div>
+</div>
+
+<!-- ===== SETUP SCREEN ===== -->
+<div id="sSetup" class="screen">
+  <div class="logo">🔥 HOT SEAT</div>
+  <div class="tagline">The Family Game Show</div>
+  <div class="setup-grid">
+    <!-- Players -->
+    <div class="setup-panel" style="grid-column:1/-1">
+      <h3>👥 PLAYERS</h3>
+      <div class="name-input-row">
+        <input type="text" id="nameInput" placeholder="Enter player name..." maxlength="20">
+        <button onclick="addPlayer()">ADD</button>
+      </div>
+      <div id="playerTags"></div>
+    </div>
+    <!-- CSV Uploads -->
+    <div class="setup-panel">
+      <h3>📂 TRIVIA FILES</h3>
+      <div style="margin-bottom:6px">
+        <div class="csv-upload-group">
+          <label class="csv-label" id="csvQaLabel">
+            <input type="file" accept=".csv" onchange="loadCSV(event,'qa')">
+            📝 Open-Answer Trivia
+          </label>
+          <button class="copy-prompt-btn" onclick="copyPrompt('qa')">📋 PROMPT</button>
+        </div>
+        <div class="csv-upload-group">
+          <label class="csv-label" id="csvMcLabel">
+            <input type="file" accept=".csv" onchange="loadCSV(event,'mc')">
+            🔤 Multiple Choice
+          </label>
+          <button class="copy-prompt-btn" onclick="copyPrompt('mc')">📋 PROMPT</button>
+        </div>
+        <div class="csv-upload-group">
+          <label class="csv-label" id="csvHtLabel">
+            <input type="file" accept=".csv" onchange="loadCSV(event,'ht')">
+            🌶️ Hot Takes
+          </label>
+          <button class="copy-prompt-btn" onclick="copyPrompt('ht')">📋 PROMPT</button>
+        </div>
+      </div>
+    </div>
+    <!-- Settings -->
+    <div class="setup-panel">
+      <h3>⚙️ SETTINGS</h3>
+      <div class="settings-row">
+        <span>Win Condition</span>
+        <select id="winCondition">
+          <option value="million">First to $1,000,000</option>
+          <option value="lastman">Last Player Standing</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <span>Starting Balance</span>
+        <input type="number" id="startBal" value="1000" min="100" max="10000" step="100">
+      </div>
+      <div class="settings-row">
+        <span>Timer (seconds)</span>
+        <input type="number" id="timerSecs" value="60" min="15" max="120" step="5">
+      </div>
+      <button class="btn btn-purple btn-sm" onclick="showSoundSettings()" style="width:100%;margin-top:8px">🔊 SOUND EFFECTS SETUP</button>
+    </div>
+  </div>
+  <button class="btn btn-gold" id="startBtn" onclick="startGame()">🔥 START THE SHOW</button>
+</div>
+
+<!-- ===== SOUND SETTINGS SCREEN ===== -->
+<div id="sSoundSettings" class="screen off">
+  <h2>🔊 SOUND EFFECTS</h2>
+  <div class="snd-tagline">ASSIGN MP3s TO ANY GAME EVENT — SAVE AS NAMED SETS</div>
+
+  <!-- Set management bar -->
+  <div class="snd-sets-bar">
+    <span style="font-size:0.8rem;color:rgba(255,255,255,0.4);letter-spacing:1px">SAVED SETS:</span>
+    <div id="sndSetChips"></div>
+    <button class="btn btn-sm btn-gold" onclick="saveSoundSet()" style="font-size:0.85rem;padding:6px 14px">💾 SAVE SET</button>
+    <button class="btn btn-sm btn-dark" onclick="clearAllSounds()" style="font-size:0.85rem;padding:6px 14px">🗑️ CLEAR ALL</button>
+    <button class="btn btn-sm btn-red" onclick="showScreen('sSetup')" style="font-size:0.85rem;padding:6px 14px">← BACK</button>
+  </div>
+
+  <div class="snd-grid" id="sndGrid">
+    <!-- Generated by JS -->
+  </div>
+</div>
+
+<!-- ===== WHEEL SCREEN ===== -->
+<div id="sWheel" class="screen off">
+  <div id="leaderHud">
+    <div style="font-size:0.7rem;color:rgba(255,255,255,0.4);letter-spacing:2px">LEADING</div>
+    <div id="leaderName" style="font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold)"></div>
+    <div id="leaderBal" style="font-size:0.85rem;color:rgba(255,215,0,0.7)"></div>
+  </div>
+  <div id="wheelTitle">WHO'S IN THE HOT SEAT?</div>
+  <div id="currentTurnName" style="font-family:'Bebas Neue';font-size:1.4rem;color:rgba(255,255,255,0.6);letter-spacing:2px;min-height:1.6rem"></div>
+  <div id="wheelPointer">▼</div>
+  <canvas id="wheelCanvas" width="360" height="360"></canvas>
+  <div id="catchingUpMsg"></div>
+  <div id="wheelSubtext">TAP TO SPIN</div>
+  <button class="btn btn-red" id="spinBtn" onclick="spinWheel()">SPIN</button>
+</div>
+
+<!-- ===== POWER-UP WHEEL ===== -->
+<div id="sPowerUpWheel" class="screen off">
+  <div id="puTitle">⚡ POWER-UP ALERT!</div>
+  <div id="puSubtitle">WATCH THE WHEEL...</div>
+  <div id="puPointer">▼</div>
+  <canvas id="puCanvas" width="360" height="360"></canvas>
+  <div id="puResult" style="font-family:'Bebas Neue';font-size:1.5rem;color:var(--purple);min-height:2rem;letter-spacing:2px"></div>
+</div>
+
+<!-- ===== SABOTAGE REVEAL ===== -->
+<div id="sSabotageReveal" class="screen off">
+  <div id="sabTitle">⚠️ SABOTAGED!</div>
+  <div id="sabSub">Every question on your wheel is a BLACK question — difficulty 4-5 only.</div>
+  <div id="sabSkipBtn" style="display:none"></div>
+  <button class="btn btn-red" id="sabContinueBtn" onclick="proceedFromSabotage()">FACE YOUR FATE →</button>
+</div>
+
+<!-- ===== HOT SEAT FLASH ===== -->
+<div id="sHotSeat" class="screen off">
+  <div id="hsTitle">🔥 IS IN THE HOT SEAT 🔥</div>
+  <div id="hsName">PLAYER NAME</div>
+  <div id="hsPowerUps"></div>
+  <div id="hsBalance">Balance: $1,000</div>
+</div>
+
+<!-- ===== CATEGORY FLASH ===== -->
+<div id="sCatFlash" class="screen off">
+  <div id="cfEmoji">🎯</div>
+  <div id="cfCategory">CATEGORY</div>
+  <div id="cfPlayer"></div>
+  <div id="cfDesc"></div>
+  <div id="cfContinue"></div>
+</div>
+
+<!-- ===== CHALLENGE SCREEN ===== -->
+<div id="sChallenge" class="screen off">
+  <div id="chalHeader">CHALLENGE</div>
+  <div id="chalPlayerName"></div>
+  <div id="timer">60</div>
+  <div id="chalQuestion"></div>
+  <div id="chalChoices"></div>
+  <div id="chalAnswer"></div>
+  <div id="chalExtra"></div>
+  <div id="chalActions"></div>
+</div>
+
+<!-- ===== RESULT SCREEN ===== -->
+<div id="sResult" class="screen off">
+  <div id="resultPlayer"></div>
+  <div id="resultLabel"></div>
+  <div id="resultAmount" class="win">+$500</div>
+  <div id="resultBalance"></div>
+  <button class="btn btn-gold" onclick="showLeaderboard()" style="margin-top:20px">VIEW STANDINGS</button>
+</div>
+
+<!-- ===== MULTIPLIER SCREEN ===== -->
+<div id="sMultiplier" class="screen off">
+  <div id="multLabel">MULTIPLIER UNLOCKED</div>
+  <div id="multValue">2×</div>
+  <div id="multPlayerNote"></div>
+  <button class="btn btn-gold" id="multContinueBtn">PLAY YOUR TURN →</button>
+</div>
+
+<!-- ===== KILL SHOT SCREEN ===== -->
+<div id="sKillShot" class="screen off">
+  <div id="ksTitle">☠️ KILL SHOT</div>
+  <div id="ksPlayer"></div>
+  <div id="ksDesc" style="color:rgba(255,255,255,0.6);font-size:1rem;max-width:400px;text-align:center">Eliminate a player — but choose carefully.</div>
+  <div class="btn-row">
+    <button class="btn btn-red" onclick="killShotPickTarget()">🎯 PICK TARGET</button>
+    <button class="btn btn-blue" onclick="killShotSpinRandom()">🎲 SPIN RANDOM</button>
+    <button class="btn btn-ghost" onclick="killShotRefuse()">✋ REFUSE THE KILL</button>
+  </div>
+  <div id="ksSpinResult"></div>
+</div>
+
+<!-- ===== ORACLE SCREEN ===== -->
+<div id="sOracle" class="screen off">
+  <div id="oracleEye">🔮</div>
+  <div id="oracleTitle">THE ORACLE SPEAKS</div>
+  <div id="oraclePrediction"></div>
+  <button class="btn btn-ghost" onclick="dismissOracle()" style="margin-top:12px">CONTINUE</button>
+</div>
+
+<!-- ===== SECOND LIFE SCREEN ===== -->
+<div id="sSecondLife" class="screen off">
+  <div style="font-size:4rem">👼</div>
+  <div id="slTitle">SECOND LIFE</div>
+  <div id="slPlayer"></div>
+  <div id="slBalance"></div>
+  <button class="btn btn-green" onclick="confirmSecondLife()" style="margin-top:16px">BRING 'EM BACK</button>
+</div>
+
+<!-- ===== CRYBABY SCREEN ===== -->
+<div id="sCrybaby" class="screen off">
+  <div id="cbTitle">👶 CRYBABY</div>
+  <div id="cbPlayer"></div>
+  <div id="cbDesc" style="color:rgba(255,255,255,0.6);font-size:1rem">Time to settle this.</div>
+  <div id="cbCoin" style="display:none">🪙</div>
+  <div id="cbResult" style="font-size:1.2rem;font-weight:700"></div>
+  <button class="btn btn-orange" id="cbFlipBtn" onclick="flipCrybabyConin()" style="display:none">FLIP THE COIN</button>
+  <button class="btn btn-dark" id="cbDoneBtn" onclick="closeCrybaby()" style="display:none">BACK TO GAME</button>
+</div>
+
+<!-- ===== LEADERBOARD ===== -->
+<div id="sLeaderboard" class="screen off">
+  <div id="lbTitle">📊 STANDINGS</div>
+  <div id="lbList"></div>
+  <button class="btn btn-red" onclick="nextRound()" style="margin-top:8px;font-size:1.5rem;padding:14px 48px">NEXT ROUND →</button>
+</div>
+
+<!-- ===== WINNER SCREEN ===== -->
+<div id="sWinner" class="screen off">
+  <div id="confettiContainer"></div>
+  <div id="winTitle">🏆 WINNER 🏆</div>
+  <div id="winName"></div>
+  <button class="btn btn-gold" onclick="location.reload()" style="margin-top:24px;font-size:1.3rem;position:relative">TAP TO PLAY AGAIN</button>
+</div>
+
+<script>
+// ============================================================
+// HELPERS
+// ============================================================
+const $ = id => document.getElementById(id);
+const fmt = n => '$' + Math.round(n).toLocaleString();
+const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('off'));
+  $(id) && $(id).classList.remove('off');
+}
+
+// ============================================================
+// SOUND SYSTEM
+// ============================================================
+// All definable sound slots
+const SOUND_SLOTS = [
+  // Wheel events
+  {id:'snd_wheel_spin',   label:'Wheel Spinning',        group:'Wheels'},
+  {id:'snd_wheel_land',   label:'Wheel Lands',           group:'Wheels'},
+  {id:'snd_pu_wheel_spin',label:'Power-Up Wheel Spin',   group:'Wheels'},
+  // Player events
+  {id:'snd_hot_seat',     label:'Hot Seat Reveal',       group:'Player Events'},
+  {id:'snd_sabotage_rev', label:'Sabotage Reveal',       group:'Player Events'},
+  {id:'snd_elim',         label:'Elimination',           group:'Player Events'},
+  {id:'snd_winner',       label:'Winner Reveal',         group:'Player Events'},
+  {id:'snd_crybaby',      label:'Crybaby Flip',          group:'Player Events'},
+  // Trivia events
+  {id:'snd_correct',      label:'Correct Answer',        group:'Trivia'},
+  {id:'snd_wrong',        label:'Wrong Answer',          group:'Trivia'},
+  {id:'snd_timer_tick',   label:'Timer Ticking (urgent)',group:'Trivia'},
+  {id:'snd_streak',       label:'Hot Streak!',           group:'Trivia'},
+  // Power-ups
+  {id:'snd_pu_collect',   label:'Power-Up Collected',    group:'Power-Ups'},
+  {id:'snd_pu_skip',      label:'Use: SKIP',             group:'Power-Ups'},
+  {id:'snd_pu_reroll',    label:'Use: REROLL',           group:'Power-Ups'},
+  {id:'snd_pu_peek',      label:'Use: PEEK',             group:'Power-Ups'},
+  {id:'snd_pu_taxdodge',  label:'Use: TAX DODGE',        group:'Power-Ups'},
+  {id:'snd_pu_sabotage',  label:'Use: SABOTAGE',         group:'Power-Ups'},
+  {id:'snd_pu_stealpu',   label:'Use: STEAL POWER-UP',   group:'Power-Ups'},
+  // Category events
+  {id:'snd_multiplier',   label:'Multiplier Unlock',     group:'Categories'},
+  {id:'snd_kill_shot',    label:'Kill Shot',             group:'Categories'},
+  {id:'snd_penalty',      label:'Penalty',               group:'Categories'},
+  {id:'snd_second_life',  label:'Second Life',           group:'Categories'},
+  {id:'snd_chance',       label:'Chance',                group:'Categories'},
+  {id:'snd_hot_take',     label:'Hot Take',              group:'Categories'},
+  {id:'snd_gauntlet',     label:'Gauntlet',              group:'Categories'},
+  {id:'snd_steal',        label:'Steal',                 group:'Categories'},
+  {id:'snd_grand_steal',  label:'Grand Steal',           group:'Categories'},
+];
+
+// Current loaded sounds: {slotId: {name, dataUrl, audio}}
+let soundMap = {};
+// Saved sets: {setName: {slotId: {name, dataUrl}}}
+let soundSets = JSON.parse(localStorage.getItem('hotseat_sound_sets') || '{}');
+let activeSoundSet = null;
+
+function playSnd(slotId) {
+  try {
+    const s = soundMap[slotId];
+    if (!s || !s.audio) return;
+    s.audio.currentTime = 0;
+    s.audio.play().catch(()=>{});
+  } catch(e) {}
+}
+function stopSnd(slotId) {
+  try {
+    const s = soundMap[slotId];
+    if (s && s.audio) { s.audio.pause(); s.audio.currentTime = 0; }
+  } catch(e) {}
+}
+
+function loadSoundFile(slotId, file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    const audio = new Audio(dataUrl);
+    soundMap[slotId] = {name: file.name, dataUrl, audio};
+    renderSoundGrid();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearSound(slotId) {
+  delete soundMap[slotId];
+  renderSoundGrid();
+}
+
+function clearAllSounds() {
+  if (!confirm('Clear all sound effects?')) return;
+  soundMap = {};
+  activeSoundSet = null;
+  renderSoundGrid();
+  renderSoundSetChips();
+}
+
+function saveSoundSet() {
+  const name = prompt('Name this sound set (e.g. Easter, Christmas, Meme):');
+  if (!name || !name.trim()) return;
+  const setName = name.trim();
+  const serialized = {};
+  for (const [k, v] of Object.entries(soundMap)) {
+    serialized[k] = {name: v.name, dataUrl: v.dataUrl};
+  }
+  soundSets[setName] = serialized;
+  localStorage.setItem('hotseat_sound_sets', JSON.stringify(soundSets));
+  activeSoundSet = setName;
+  renderSoundSetChips();
+  alert(`✅ Saved as "${setName}"!`);
+}
+
+function loadSoundSet(setName) {
+  const set = soundSets[setName];
+  if (!set) return;
+  soundMap = {};
+  for (const [k, v] of Object.entries(set)) {
+    const audio = new Audio(v.dataUrl);
+    soundMap[k] = {name: v.name, dataUrl: v.dataUrl, audio};
+  }
+  activeSoundSet = setName;
+  renderSoundGrid();
+  renderSoundSetChips();
+}
+
+function deleteSoundSet(setName) {
+  if (!confirm(`Delete sound set "${setName}"?`)) return;
+  delete soundSets[setName];
+  localStorage.setItem('hotseat_sound_sets', JSON.stringify(soundSets));
+  if (activeSoundSet === setName) activeSoundSet = null;
+  renderSoundSetChips();
+}
+
+function renderSoundSetChips() {
+  const names = Object.keys(soundSets);
+  const chips = $('sndSetChips');
+  chips.innerHTML = names.length === 0
+    ? '<span style="font-size:0.8rem;color:rgba(255,255,255,0.3)">None saved yet</span>'
+    : names.map(n => `
+        <span class="snd-set-chip${n===activeSoundSet?' active':''}" onclick="loadSoundSet('${n}')">${n}</span>
+        <span class="snd-set-chip del-btn" onclick="deleteSoundSet('${n}')">✕</span>
+      `).join('');
+}
+
+function renderSoundGrid() {
+  // Group slots by group
+  const groups = {};
+  SOUND_SLOTS.forEach(s => {
+    if (!groups[s.group]) groups[s.group] = [];
+    groups[s.group].push(s);
+  });
+  const grid = $('sndGrid');
+  grid.innerHTML = '';
+  for (const [grp, slots] of Object.entries(groups)) {
+    const panel = document.createElement('div');
+    panel.className = 'snd-panel';
+    let inner = `<h4>${grp}</h4>`;
+    slots.forEach(slot => {
+      const has = !!soundMap[slot.id];
+      const name = has ? soundMap[slot.id].name : '— none —';
+      inner += `
+        <div class="snd-row">
+          <label>${slot.label}</label>
+          ${has ? `<button class="snd-play-btn" onclick="playSnd('${slot.id}')">▶</button>` : ''}
+          <label class="snd-file-btn ${has?'has-sound':''}">
+            <input type="file" accept=".mp3,audio/*" onchange="loadSoundFile('${slot.id}', this.files[0])">
+            ${has ? '✅ ' + name.substring(0,14) : '+ ADD MP3'}
+          </label>
+          ${has ? `<button class="snd-clear-btn" onclick="clearSound('${slot.id}')">✕</button>` : ''}
+        </div>`;
+    });
+    panel.innerHTML = inner;
+    grid.appendChild(panel);
+  }
+}
+
+function showSoundSettings() {
+  showScreen('sSoundSettings');
+  renderSoundGrid();
+  renderSoundSetChips();
+}
+
+// ============================================================
+// DATA
+// ============================================================
+const FALLBACK_QA = [
+  {type:'qa',question:'What is the capital of Alabama?',answer:'Montgomery',difficulty:1},
+  {type:'qa',question:'How many stripes are on the US flag?',answer:'13',difficulty:1},
+  {type:'qa',question:'What planet is closest to the sun?',answer:'Mercury',difficulty:1},
+  {type:'qa',question:'In what year did World War II end?',answer:'1945',difficulty:2},
+  {type:'qa',question:'What is the largest ocean on Earth?',answer:'Pacific Ocean',difficulty:1},
+  {type:'qa',question:'Who wrote Romeo and Juliet?',answer:'Shakespeare',difficulty:2},
+  {type:'qa',question:'What is the square root of 144?',answer:'12',difficulty:2},
+  {type:'qa',question:'What year did the Titanic sink?',answer:'1912',difficulty:2},
+  {type:'qa',question:'Who is the first man on the moon?',answer:'Neil Armstrong',difficulty:1},
+  {type:'qa',question:'How many bones are in the human body?',answer:'206',difficulty:3},
+];
+const FALLBACK_MC = [
+  {type:'mc',question:'Which team has the most NCAA football national championships?',answer:'Alabama',choices:['Alabama','Ohio State','Notre Dame','Oklahoma'],difficulty:1},
+  {type:'mc',question:'How many sides does a hexagon have?',answer:'6',choices:['5','6','7','8'],difficulty:1},
+  {type:'mc',question:'What is the chemical symbol for gold?',answer:'Au',choices:['Go','Gd','Au','Ag'],difficulty:2},
+  {type:'mc',question:'Who painted the Mona Lisa?',answer:'Leonardo da Vinci',choices:['Picasso','Michelangelo','Leonardo da Vinci','Raphael'],difficulty:1},
+  {type:'mc',question:'What year did the iPhone first launch?',answer:'2007',choices:['2005','2006','2007','2008'],difficulty:2},
+  {type:'mc',question:'What is the fastest land animal?',answer:'Cheetah',choices:['Lion','Horse','Cheetah','Greyhound'],difficulty:1},
+  {type:'mc',question:'How many planets are in our solar system?',answer:'8',choices:['7','8','9','10'],difficulty:1},
+  {type:'mc',question:'What element does Pb represent?',answer:'Lead',choices:['Lithium','Gold','Lead','Tin'],difficulty:3},
+];
+const FALLBACK_HOT_TAKES = [
+  'Pineapple belongs on pizza. Defend it.','Alabama football is the greatest dynasty in all of sports history.',
+  'The movie was better than the book.','Air conditioning is overrated.','Breakfast is the worst meal of the day.',
+  'Dogs are overrated pets.','Social media has done more good than harm.','Working from home makes people less productive.',
+  'Thanksgiving food is mid.','Country music is the best genre.','Summer is the worst season.',
+  'TV shows are better than movies now.','Cats are better pets than dogs.','The South has the best food in America.',
+  'Chick-fil-A is overrated.','Sweet tea is the best drink ever invented.',
+];
+const ORACLE_PREDICTIONS = [
+  'The player in last place right now will eliminate someone before this game ends.',
+  'Someone will use the Crybaby card and immediately regret it.',
+  'The person who is winning right now will NOT be the final winner.',
+  'A Kill Shot will happen before this game is over.',
+  'Someone will earn a multiplier and then answer a trivia question wrong anyway.',
+  'Two players will end up within $500 of each other at some point this game.',
+  'The next trivia question will be embarrassingly easy.',
+  'Someone at this table is about to get very loud.',
+  "The biggest comeback you've ever seen is brewing right now.",
+  "Someone here is too confident. That's going to cost them.",
+];
+const PENALTY_MESSAGES = [
+  {text:'The IRS has entered the chat.',amount:600},
+  {text:"You blinked. That costs money here.",amount:200},
+  {text:'You voted for the wrong candidate. Financially speaking.',amount:500},
+  {text:'Your WiFi cut out during your Zoom call. Classic.',amount:300},
+  {text:"Forgot to tip. The universe remembers.",amount:400},
+  {text:"You replied-all to a 50-person email. Everyone saw it.",amount:350},
+  {text:"Autocorrected. They read it.",amount:250},
+  {text:"Accidentally liked a 4-year-old Instagram post.",amount:200},
+  {text:"You called your teacher 'mom'.",amount:300},
+  {text:"You spoiled the ending. Now you pay.",amount:500},
+];
+const CHANCE_MESSAGES = {
+  win:["Lucky! The stars aligned for you.","The universe owes you one.","Right place, right time."],
+  lose:["Tough break, kid.","The house always wins.","Maybe next time."]
+};
+
+// ============================================================
+// WHEEL CATEGORIES
+// ============================================================
+const CAT_WHEEL_SLOTS = 10;
+const WHEEL_CATS = [
+  {id:'trivia_qa',   label:'Q&A TRIVIA',     emoji:'📝',color:'#1565c0',weight:14},
+  {id:'trivia_mc',   label:'MULTI CHOICE',   emoji:'🔤',color:'#0d47a1',weight:14},
+  {id:'penalty',     label:'PENALTY',        emoji:'💸',color:'#b71c1c',weight:10},
+  {id:'chance',      label:'CHANCE',         emoji:'🎲',color:'#1b5e20',weight:10},
+  {id:'hot_take',    label:'HOT TAKE',       emoji:'🌶️',color:'#e65100',weight:8},
+  {id:'mult_2x',     label:'2× MULTIPLIER',  emoji:'✖️',color:'#6a1fa2',weight:7},
+  {id:'speed_round', label:'SPEED ROUND',    emoji:'⚡',color:'#00838f',weight:6},
+  {id:'freeze',      label:'FREEZE',         emoji:'🧊',color:'#01579b',weight:5},
+  {id:'dbl_nothing', label:'DBL OR NOTHING', emoji:'🪙',color:'#4e342e',weight:5},
+  {id:'wild_card',   label:'WILD CARD',      emoji:'🃏',color:'#37474f',weight:5},
+  {id:'public_def',  label:'PUBLIC DEFENDER',emoji:'⚖️',color:'#1a237e',weight:5},
+  {id:'rival',       label:'RIVAL CHALLENGE',emoji:'⚔️',color:'#880e4f',weight:4},
+  {id:'mult_3x',     label:'3× MULTIPLIER',  emoji:'🔥',color:'#7b1fa2',weight:4},
+  {id:'bounty',      label:'BOUNTY',         emoji:'🎯',color:'#bf360c',weight:4},
+  {id:'shield',      label:'SHIELD',         emoji:'🛡️',color:'#004d40',weight:3},
+  {id:'ghost_round', label:'GHOST ROUND',    emoji:'👻',color:'#212121',weight:3},
+  {id:'debt_bomb',   label:'DEBT BOMB',      emoji:'💣',color:'#1a1a1a',weight:3},
+  {id:'steal',       label:'STEAL',          emoji:'🦝',color:'#424242',weight:3},
+  {id:'mult_5x',     label:'5× MULTIPLIER',  emoji:'💥',color:'#880e4f',weight:2},
+  {id:'grand_steal', label:'GRAND STEAL',    emoji:'💰',color:'#827717',weight:2},
+  {id:'gauntlet',    label:'GAUNTLET',       emoji:'🗡️',color:'#1b0000',weight:2},
+  {id:'mult_10x',    label:'10× MULTIPLIER', emoji:'🌟',color:'#4a148c',weight:1},
+  {id:'kill_shot',   label:'KILL SHOT',      emoji:'☠️',color:'#000000',weight:1},
+  {id:'second_life', label:'SECOND LIFE',    emoji:'👼',color:'#006064',weight:1},
+  {id:'kingmaker',   label:'KINGMAKER',      emoji:'👑',color:'#3e2723',weight:1},
+];
+
+// Difficulty color map
+function diffColor(d) {
+  if (d <= 2) return '#00c853'; // green
+  if (d === 3) return '#ffd700'; // yellow
+  return '#e8132a'; // red
+}
+
+// Power-up types
+const POWERUPS = [
+  {id:'skip',    label:'SKIP',             emoji:'⏭️'},
+  {id:'reroll',  label:'REROLL',           emoji:'🔁'},
+  {id:'peek',    label:'PEEK',             emoji:'🔮'},
+  {id:'taxdodge',label:'TAX DODGE',        emoji:'💸'},
+  {id:'sabotage',label:'SABOTAGE',         emoji:'💣'},
+  {id:'stealpu', label:'STEAL POWER-UP',   emoji:'🔍'},
+];
+
+// ============================================================
+// LLM PROMPTS
+// ============================================================
+const LLM_PROMPTS = {
+  qa: `Generate open-answer trivia questions for a family game show called Hot Seat. The game uses a money scaling system where questions are worth more as the game progresses and players are eliminated.\n\nReturn a CSV with these exact columns (no extra spaces):\ntype,category,question,answer,choice_a,choice_b,choice_c,choice_d,difficulty\n\nRules:\n- type is always: trivia\n- Leave choice_a through choice_d blank for open-answer questions\n- difficulty scale: 1=very easy (anyone knows it), 2=easy, 3=medium, 4=hard (trivia nerds), 5=expert (almost nobody gets it)\n- Weight distribution: 30% difficulty 1-2, 40% difficulty 3, 30% difficulty 4-5\n- Categories: mix of superhero movies, video games, US history, modern TV (post-2000), pop culture, sports, music, food\n- Make some questions funny or edgy — this is a party game not a quiz bowl\n- Generate 60 questions minimum\n- No duplicate questions\n- Answers should be short (1-4 words ideally)\n- Do not add quotes around fields unless the field contains a comma`,
+  mc: `Generate multiple-choice trivia questions for a family game show called Hot Seat. The game uses a money scaling system where harder questions (difficulty 4-5) pay out significantly more than easy ones.\n\nReturn a CSV with these exact columns:\ntype,category,question,answer,choice_a,choice_b,choice_c,choice_d,difficulty\n\nRules:\n- type is always: trivia\n- Fill all 4 choice columns (choice_a through choice_d)\n- The correct answer must ALSO appear in the answer column exactly as written in the choices\n- All 4 choices should be plausible — no obviously wrong options\n- difficulty scale: 1=very easy, 2=easy, 3=medium, 4=hard, 5=expert\n- Weight distribution: 25% difficulty 1-2, 45% difficulty 3, 30% difficulty 4-5\n- Categories: mix of superhero movies, video games, US history, modern TV (post-2000), pop culture, Alabama/South culture, sports, science\n- Make some questions funny — this is a party game\n- Generate 60 questions minimum\n- No duplicate questions\n- Do not add quotes around fields unless the field contains a comma`,
+  ht: `Generate spicy opinion prompts for a family game show called Hot Seat. Players must defend these statements in front of the group who then votes approve or disapprove.\n\nReturn a plain CSV with one column:\nprompt\n\nRules:\n- No header row needed, or include "prompt" as header (app ignores it)\n- One prompt per line\n- Topics: race, gender, religion, pop culture, food opinions, sports rivalries, generational debates, Southern culture, relationships, social media, money\n- They should be genuinely controversial — not offensive but enough to cause real disagreement at a family/friend game night\n- Mix serious takes with funny ones\n- Some should be very Southern/Alabama specific\n- Generate 40 prompts minimum\n- Do not use quotes around prompts unless they contain a comma`
+};
+
+function copyPrompt(type) {
+  navigator.clipboard.writeText(LLM_PROMPTS[type]).then(()=>{
+    showStreakToast('📋 Prompt copied to clipboard!');
+  }).catch(()=> alert(LLM_PROMPTS[type]));
+}
+
+// ============================================================
+// GAME STATE
+// ============================================================
+const SAVE_KEY = 'hotseat_game_v3';
+let players = [];
+let winCondition = 'million';
+let startingBalance = 1000;
+let timerDuration = 60;
+let killShotAvailable = true;
+let oracleFired = false;
+let activeMultiplier = 1;
+let gameStartTime = Date.now();
+let currentPlayerIndex = 0;
+let completedRounds = 0;
+let pendingOracle = false;
+let secondLifePlayer = null;
+let crybabyTargetIndex = 0;
+let pickCallback = null;
+let wheelSpinning = false;
+let wheelAngle = 0;
+let wheelPhase = 'name'; // 'name' | 'category'
+let wheelSegments = [];
+let timerInterval = null;
+let timeLeft = 0;
+let puWheelSpinning = false;
+let puWheelAngle = 0;
+let puWheelSegments = [];
+let pendingCategoryAfterPU = null; // category to go to after power-up reveal
+
+// CSV data
+let csvQa = [];
+let csvMc = [];
+let csvHt = [];
+
+// ============================================================
+// MONEY SCALING
+// ============================================================
+function getActivePlayers() { return players.filter(p => !p.eliminated); }
+
+function scaleMoney(base) {
+  const active = getActivePlayers();
+  const elimMult = Math.min(8, Math.pow(players.length / Math.max(1, active.length), 1.8));
+  const roundMult = Math.pow(1.15, completedRounds);
+  return Math.round(base * elimMult * roundMult);
+}
+
+function updateCompletedRounds() {
+  // A round completes when every active player spinCount >= completedRounds+1
+  const active = getActivePlayers();
+  if (active.length === 0) return;
+  const threshold = completedRounds + 1;
+  if (active.every(p => (p.spinCount || 0) >= threshold)) {
+    completedRounds++;
+  }
+}
+
+// ============================================================
+// BALANCE & EFFECTS
+// ============================================================
+function applyBalance(player, amount, isMultiplied) {
+  // Tax dodge check
+  if (amount < 0 && player.taxDodge) {
+    player.taxDodge = false;
+    playSnd('snd_pu_taxdodge');
+    showTaxDodgeToast(player.name);
+    saveGameState();
+    return;
+  }
+  // Shield
+  if (amount < 0 && player.shielded) {
+    player.shielded = false;
+    showStreakToast(`🛡️ ${player.name}'s shield absorbed it!`);
+    saveGameState();
+    return;
+  }
+  player.balance = Math.max(0, player.balance + amount);
+  saveGameState();
+  checkElimination(player);
+}
+
+function showTaxDodgeToast(name) {
+  const t = $('taxDodgeToast');
+  t.textContent = `💸 ${name.toUpperCase()} — TAX DODGED!`;
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.style.display = 'none', 3000);
+}
+
+function checkElimination(player) {
+  if (player.balance <= 0 && !player.eliminated) {
+    player.balance = 0;
+    player.eliminated = true;
+    playSnd('snd_elim');
+    showElimination(player);
+    return true;
+  }
+  return false;
+}
+
+function checkWinner() {
+  const active = getActivePlayers();
+  if (active.length === 0) return;
+  if (winCondition === 'lastman' && active.length === 1) { showWinner(active[0]); return; }
+  if (winCondition === 'million') {
+    const w = active.find(p => p.balance >= 1000000);
+    if (w) showWinner(w);
+  }
+}
+
+function getBadges(player) {
+  let b = '';
+  if (player.eliminated) b += '💀';
+  if (player.crybaby) b += '👶';
+  if (player.frozen) b += '🧊';
+  if (player.shielded) b += '🛡️';
+  if (player.bounty) b += '⚖️';
+  if (player.debtBomb) b += '💣';
+  if (player.sabotaged) b += '⚠️';
+  return b;
+}
+
+function getPowerUpIcons(player) {
+  return (player.powerUps || []).map(p => {
+    const def = POWERUPS.find(x => x.id === p.id);
+    return def ? def.emoji : '?';
+  }).join('');
+}
+
+// ============================================================
+// SETUP
+// ============================================================
+let tempPlayers = [];
+function addPlayer() {
+  const inp = $('nameInput');
+  const name = inp.value.trim();
+  if (!name || tempPlayers.includes(name) || tempPlayers.length >= 20) return;
+  tempPlayers.push(name);
+  inp.value = '';
+  renderTags();
+}
+function removePlayer(name) { tempPlayers = tempPlayers.filter(n=>n!==name); renderTags(); }
+function renderTags() {
+  $('playerTags').innerHTML = tempPlayers.map(n =>
+    `<span class="player-tag">${n}<button onclick="removePlayer('${n}')">✕</button></span>`
+  ).join('');
+}
+
+function loadCSV(evt, type) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.split('\n').filter(l=>l.trim());
+    if (type === 'ht') {
+      const newItems = lines.filter(l=>l.toLowerCase()!=='prompt').map(l=>l.trim());
+      csvHt = [...csvHt, ...newItems];
+      const lbl = $('csvHtLabel');
+      lbl.classList.add('loaded');
+      lbl.innerHTML = `✅ Hot Takes: ${csvHt.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'ht')" style="display:none">`;
+    } else {
+      // Parse CSV properly (handles quoted commas)
+      const rows = lines.slice(1).map(l => {
+        const cols = parseCSVLine(l);
+        return { type, question: cols[2]||'', answer: cols[3]||'', choices: [cols[4],cols[5],cols[6],cols[7]].filter(Boolean), difficulty: parseInt(cols[8])||1 };
+      }).filter(r=>r.question);
+      if (type === 'qa') {
+        csvQa = [...csvQa, ...rows];
+        const lbl = $('csvQaLabel');
+        lbl.classList.add('loaded');
+        lbl.innerHTML = `✅ QA Trivia: ${csvQa.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'qa')" style="display:none">`;
+      } else {
+        csvMc = [...csvMc, ...rows];
+        const lbl = $('csvMcLabel');
+        lbl.classList.add('loaded');
+        lbl.innerHTML = `✅ MC Trivia: ${csvMc.length} loaded<br><small style="color:rgba(255,255,255,0.5)">+ ADD MORE</small><input type="file" accept=".csv" onchange="loadCSV(event,'mc')" style="display:none">`;
+      }
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQuotes = !inQuotes; }
+    else if (c === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+    else { current += c; }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function startGame() {
+  if (tempPlayers.length < 2) { alert('Add at least 2 players!'); return; }
+  winCondition = $('winCondition').value;
+  startingBalance = parseInt($('startBal').value) || 1000;
+  timerDuration = parseInt($('timerSecs').value) || 60;
+  players = tempPlayers.map(name => ({
+    name, balance: startingBalance,
+    eliminated: false, frozen: false, shielded: false,
+    bounty: false, debtBomb: false, crybaby: false,
+    streak: 0, streakReady: false, spinCount: 0,
+    powerUps: [], sabotaged: false, taxDodge: false,
+  }));
+  gameStartTime = Date.now();
+  killShotAvailable = true;
+  oracleFired = false;
+  activeMultiplier = 1;
+  completedRounds = 0;
+  saveGameState();
+  showScreen('sWheel');
+  $('crybabyBtn').style.display = 'block';
+  if($('resetBtn')) $('resetBtn').style.display = 'block';
+  wheelPhase = 'name';
+  buildNameWheel();
+  renderWheelScreen();
+}
+
+// ============================================================
+// WHEEL DRAWING
+// ============================================================
+function getSpinFairnessFilter() {
+  const active = getActivePlayers();
+  if (active.length < 2) return active;
+  const maxSpin = Math.max(...active.map(p => p.spinCount || 0));
+  const underplayed = active.filter(p => maxSpin - (p.spinCount || 0) >= 3);
+  if (underplayed.length > 0) return underplayed;
+  return active;
+}
+
+function buildNameWheel() {
+  wheelPhase = 'name';
+  const filtered = getSpinFairnessFilter();
+  const isFiltered = filtered.length < getActivePlayers().length;
+  $('catchingUpMsg').textContent = isFiltered ? '⚡ Catching up the field...' : '';
+  wheelSegments = filtered.map((p, i) => ({
+    label: p.name,
+    color: i%2===0 ? '#ffffff' : '#1a1a1a',
+    textColor: i%2===0 ? '#000' : '#fff',
+    player: p
+  }));
+  drawWheel($('wheelCanvas'), wheelSegments, wheelAngle, 'name');
+}
+
+function buildCategoryWheel(blackOnly = false) {
+  wheelPhase = 'category';
+  let available = [...WHEEL_CATS];
+  const eliminated = players.filter(p => p.eliminated);
+  if (!killShotAvailable) available = available.filter(c => c.id !== 'kill_shot');
+  if (eliminated.length === 0) available = available.filter(c => c.id !== 'second_life' && c.id !== 'ghost_round');
+
+  let slots;
+  if (blackOnly) {
+    // Sabotage: all black (hard trivia)
+    slots = Array(CAT_WHEEL_SLOTS).fill({id:'trivia_black',label:'⚫ BLACK TRIVIA',emoji:'⚫',color:'#111',weight:1});
+  } else {
+    let pool = [];
+    available.forEach(c => { for (let i = 0; i < c.weight; i++) pool.push(c); });
+    slots = [];
+    for (let i = 0; i < CAT_WHEEL_SLOTS; i++) slots.push(pool[Math.floor(Math.random()*pool.length)]);
+  }
+
+  // Assign difficulty tiers to trivia slots
+  wheelSegments = slots.map(c => {
+    let color = c.color;
+    let diffTier = null;
+    if (c.id === 'trivia_qa' || c.id === 'trivia_mc' || c.id === 'trivia_black') {
+      const roll = Math.random();
+      if (c.id === 'trivia_black') { diffTier = 'red'; color = '#1a0000'; }
+      else if (roll < 0.5) { diffTier = 'green'; color = '#0d3b1c'; }
+      else if (roll < 0.8) { diffTier = 'yellow'; color = '#3b3000'; }
+      else { diffTier = 'red'; color = '#3b0005'; }
+    }
+    return { label: c.label, emoji: c.emoji, color, cat: c, diffTier };
+  });
+  drawWheel($('wheelCanvas'), wheelSegments, wheelAngle, 'category');
+}
+
+function drawWheel(canvas, segments, angle, phase) {
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const r = cx - 10;
+  const n = segments.length;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for (let i = 0; i < n; i++) {
+    const startA = angle + (i/n)*Math.PI*2 - Math.PI/2;
+    const endA = angle + ((i+1)/n)*Math.PI*2 - Math.PI/2;
+    const seg = segments[i];
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,startA,endA);
+    ctx.closePath();
+    ctx.fillStyle = seg.color || '#333';
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Diff dot for trivia
+    if (seg.diffTier) {
+      const dotColors = {green:'#00c853',yellow:'#ffd700',red:'#e8132a'};
+      const midA = angle + ((i+0.5)/n)*Math.PI*2 - Math.PI/2;
+      const dotDist = r - 14;
+      const dx = cx + Math.cos(midA)*dotDist;
+      const dy = cy + Math.sin(midA)*dotDist;
+      ctx.beginPath();
+      ctx.arc(dx,dy,5,0,Math.PI*2);
+      ctx.fillStyle = dotColors[seg.diffTier];
+      ctx.fill();
+    }
+
+    // Label
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(angle + ((i+0.5)/n)*Math.PI*2 - Math.PI/2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = phase === 'name' ? (seg.textColor||'#fff') : '#fff';
+    ctx.font = phase === 'name' ? 'bold 14px Barlow Condensed' : '11px Barlow Condensed';
+    const txt = phase === 'name' ? (seg.label||'') : ((seg.emoji||'') + ' ' + (seg.label||'').substring(0,10));
+    ctx.fillText(txt, r-8, 5);
+    ctx.restore();
+  }
+
+  // Center cap
+  ctx.beginPath();
+  ctx.arc(cx,cy,22,0,Math.PI*2);
+  ctx.fillStyle = '#ffd700';
+  ctx.fill();
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.fillStyle = '#000';
+  ctx.font = 'bold 14px Bebas Neue';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🔥',cx,cy);
+}
+
+function flashWheel(canvas, segments, angle, flashIdx) {
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width/2, cy = canvas.height/2;
+  const r = cx - 10;
+  const n = segments.length;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (let i = 0; i < n; i++) {
+    const startA = angle + (i/n)*Math.PI*2 - Math.PI/2;
+    const endA = angle + ((i+1)/n)*Math.PI*2 - Math.PI/2;
+    const seg = segments[i];
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,startA,endA); ctx.closePath();
+    ctx.fillStyle = i === flashIdx ? '#ffffff' : (seg.color||'#333');
+    ctx.fill(); ctx.strokeStyle='#000'; ctx.lineWidth=2; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.rotate(angle + ((i+0.5)/n)*Math.PI*2 - Math.PI/2);
+    ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.font='11px Barlow Condensed';
+    const txt = wheelPhase==='name' ? (seg.label||'') : ((seg.emoji||'')+' '+(seg.label||'').substring(0,10));
+    ctx.fillText(txt, r-8, 5); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.fillStyle='#ffd700'; ctx.fill();
+  ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#000'; ctx.font='bold 14px Bebas Neue'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🔥',cx,cy);
+}
+
+function getPointerIndex(segs, angle) {
+  const n = segs.length;
+  const offset = ((-angle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+  return Math.floor(offset * n / (Math.PI*2)) % n;
+}
+
+function renderWheelScreen() {
+  const active = getActivePlayers();
+  if (active.length > 0) {
+    const leader = [...active].sort((a,b)=>b.balance-a.balance)[0];
+    $('leaderHud').style.display = 'block';
+    $('leaderName').textContent = leader.name.toUpperCase();
+    $('leaderBal').textContent = fmt(leader.balance);
+  }
+  if (wheelPhase === 'name') {
+    $('wheelTitle').textContent = "WHO'S IN THE HOT SEAT?";
+    $('wheelSubtext').textContent = 'TAP TO SPIN';
+    $('currentTurnName').textContent = '';
+  } else {
+    const p = players[currentPlayerIndex];
+    $('wheelTitle').textContent = 'SPIN FOR CATEGORY';
+    $('wheelSubtext').textContent = 'TAP TO SPIN';
+    $('currentTurnName').textContent = p ? p.name.toUpperCase() + ' — CHOOSE YOUR FATE' : '';
+    $('catchingUpMsg').textContent = '';
+  }
+}
+
+// ============================================================
+// SPIN LOGIC
+// ============================================================
+function spinWheel() {
+  if (wheelSpinning) return;
+  wheelSpinning = true;
+  $('spinBtn').disabled = true;
+
+  if (wheelPhase === 'name' && !oracleFired && (Date.now()-gameStartTime) < 180000 && Math.random() < 0.15) {
+    pendingOracle = true;
+  }
+
+  playSnd('snd_wheel_spin');
+
+  const totalRot = (Math.PI*2)*randInt(5,8) + Math.random()*Math.PI*2;
+  const duration = 4000 + Math.random()*2000;
+  const startAngle = wheelAngle;
+  const startTime = performance.now();
+  let flashInterval = null;
+  let flashIdx = -1;
+
+  function ease(t) { return 1 - Math.pow(1-t, 3); }
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed/duration, 1);
+    wheelAngle = startAngle + totalRot * ease(t);
+    const remaining = duration - elapsed;
+    if (remaining <= 2000 && !flashInterval) {
+      flashInterval = setInterval(() => {
+        flashIdx = flashIdx === getPointerIndex(wheelSegments, wheelAngle) ? -1 : getPointerIndex(wheelSegments, wheelAngle);
+        flashWheel($('wheelCanvas'), wheelSegments, wheelAngle, flashIdx);
+      }, 150);
+    }
+    drawWheel($('wheelCanvas'), wheelSegments, wheelAngle, wheelPhase);
+    if (t < 1) { requestAnimationFrame(animate); }
+    else {
+      wheelAngle = startAngle + totalRot;
+      if (flashInterval) clearInterval(flashInterval);
+      drawWheel($('wheelCanvas'), wheelSegments, wheelAngle, wheelPhase);
+      stopSnd('snd_wheel_spin');
+      playSnd('snd_wheel_land');
+      wheelSpinning = false;
+      $('spinBtn').disabled = false;
+      setTimeout(() => handleSpinResult(), 600);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function handleSpinResult() {
+  const idx = getPointerIndex(wheelSegments, wheelAngle);
+  const seg = wheelSegments[idx];
+  if (!seg) { renderWheelScreen(); return; }
+
+  if (wheelPhase === 'name') {
+    const player = seg.player;
+    if (!player) { renderWheelScreen(); return; }
+    currentPlayerIndex = players.indexOf(player);
+    player.spinCount = (player.spinCount || 0) + 1;
+    updateCompletedRounds();
+
+    if (pendingOracle) {
+      pendingOracle = false;
+      oracleFired = true;
+      showOracle(() => afterNameWheelLand(player));
+      return;
+    }
+    afterNameWheelLand(player);
+  } else {
+    // Category wheel
+    const cat = seg.cat;
+    if (!cat) { renderWheelScreen(); return; }
+    handleCategory(cat, seg.diffTier);
+  }
+}
+
+function afterNameWheelLand(player) {
+  // Check frozen
+  if (player.frozen) {
+    player.frozen = false;
+    showCatFlash('🧊', 'FROZEN!', player.name, `${player.name} is frozen — skipping this turn!`);
+    $('cfContinue').innerHTML = `<button class="btn btn-blue" onclick="showLeaderboard()">VIEW STANDINGS</button>`;
+    return;
+  }
+
+  // Check sabotage
+  if (player.sabotaged) {
+    showSabotageReveal(player);
+    return;
+  }
+
+  // 25% power-up chance
+  if (Math.random() < 0.25 && (player.powerUps || []).length < 3) {
+    showHotSeatThenPowerUp(player);
+  } else {
+    showHotSeat(player);
+  }
+}
+
+// ============================================================
+// HOT SEAT FLASH
+// ============================================================
+function showHotSeat(player) {
+  checkAndApplyStreak(player);
+  playSnd('snd_hot_seat');
+  showScreen('sHotSeat');
+  $('hsName').textContent = player.name.toUpperCase();
+  $('hsBalance').textContent = 'Balance: ' + fmt(player.balance);
+  $('hsPowerUps').textContent = getPowerUpIcons(player);
+  // Debt bomb trigger
+  if (player.debtBomb) {
+    player.debtBomb = false;
+    const loss = scaleMoney(600);
+    setTimeout(() => {
+      applyBalance(player, -loss, false);
+      showStreakToast(`💣 DEBT BOMB DETONATED! ${player.name} loses ${fmt(loss)}!`);
+    }, 800);
+  }
+  setTimeout(() => {
+    buildCategoryWheel(false);
+    showScreen('sWheel');
+    renderWheelScreen();
+  }, 2200);
+}
+
+function showHotSeatThenPowerUp(player) {
+  checkAndApplyStreak(player);
+  playSnd('snd_hot_seat');
+  showScreen('sHotSeat');
+  $('hsName').textContent = player.name.toUpperCase();
+  $('hsBalance').textContent = 'Balance: ' + fmt(player.balance);
+  $('hsPowerUps').textContent = getPowerUpIcons(player);
+  setTimeout(() => spinPowerUpWheel(player), 2000);
+}
+
+// ============================================================
+// POWER-UP WHEEL
+// ============================================================
+function spinPowerUpWheel(player) {
+  playSnd('snd_pu_wheel_spin');
+  showScreen('sPowerUpWheel');
+  $('puTitle').textContent = `⚡ ${player.name.toUpperCase()} — POWER-UP!`;
+  $('puSubtitle').textContent = 'SPINNING...';
+  $('puResult').textContent = '';
+
+  puWheelSegments = POWERUPS.map((p,i) => ({
+    label: p.label, emoji: p.emoji,
+    color: ['#7b1fa2','#1565c0','#004d40','#1b5e20','#b71c1c','#e65100'][i],
+    puDef: p
+  }));
+  puWheelAngle = 0;
+  drawPUWheel(-1);
+
+  const totalRot = (Math.PI*2)*randInt(6,10) + Math.random()*Math.PI*2;
+  const duration = 4000 + Math.random()*2000;
+  const startTime = performance.now();
+  let flashInterval = null;
+  let flashIdx = -1;
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed/duration, 1);
+    puWheelAngle = totalRot * (1 - Math.pow(1-t, 3));
+    const remaining = duration - elapsed;
+    if (remaining <= 2000 && !flashInterval) {
+      flashInterval = setInterval(() => {
+        flashIdx = flashIdx === getPUIdx() ? -1 : getPUIdx();
+        drawPUWheel(flashIdx);
+      }, 150);
+    }
+    drawPUWheel(remaining <= 2000 ? flashIdx : -1);
+    if (t < 1) { requestAnimationFrame(animate); }
+    else {
+      if (flashInterval) clearInterval(flashInterval);
+      drawPUWheel(getPUIdx());
+      stopSnd('snd_pu_wheel_spin');
+      const idx = getPUIdx();
+      const won = puWheelSegments[idx].puDef;
+      $('puResult').textContent = `${won.emoji} ${won.label} ACQUIRED!`;
+      playSnd('snd_pu_collect');
+      setTimeout(() => {
+        grantPowerUp(player, won);
+        showEffectScreen(`${won.emoji} POWER-UP ACQUIRED!`,
+          `${player.name.toUpperCase()} received: ${won.emoji} ${won.label}`,
+          'GOT IT →', () => {
+            buildCategoryWheel(false);
+            showScreen('sWheel');
+            renderWheelScreen();
+          });
+      }, 1500);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function getPUIdx() {
+  const n = puWheelSegments.length;
+  const offset = ((-puWheelAngle) % (Math.PI*2) + Math.PI*2) % (Math.PI*2);
+  return Math.floor(offset * n / (Math.PI*2)) % n;
+}
+
+function drawPUWheel(flashIdx) {
+  const canvas = $('puCanvas');
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width/2, cy = canvas.height/2, r = cx-10;
+  const n = puWheelSegments.length;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (let i = 0; i < n; i++) {
+    const startA = puWheelAngle + (i/n)*Math.PI*2 - Math.PI/2;
+    const endA = puWheelAngle + ((i+1)/n)*Math.PI*2 - Math.PI/2;
+    const seg = puWheelSegments[i];
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,startA,endA); ctx.closePath();
+    ctx.fillStyle = i === flashIdx ? '#fff' : (seg.color || '#333');
+    ctx.fill(); ctx.strokeStyle='#000'; ctx.lineWidth=2; ctx.stroke();
+    ctx.save(); ctx.translate(cx,cy);
+    ctx.rotate(puWheelAngle + ((i+0.5)/n)*Math.PI*2 - Math.PI/2);
+    ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.font='11px Barlow Condensed';
+    ctx.fillText((seg.emoji||'') + ' ' + (seg.label||'').substring(0,10), r-8, 5);
+    ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx,cy,22,0,Math.PI*2); ctx.fillStyle='#7b1fa2'; ctx.fill();
+  ctx.strokeStyle='#000'; ctx.lineWidth=3; ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 12px Bebas Neue'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('⚡',cx,cy);
+}
+
+// ============================================================
+// POWER-UP MANAGEMENT
+// ============================================================
+function grantPowerUp(player, puDef) {
+  if (!player.powerUps) player.powerUps = [];
+  if (player.powerUps.length >= 3) return; // full — skip
+  player.powerUps.push({id: puDef.id});
+  saveGameState();
+}
+
+function removePowerUp(player, puId) {
+  const idx = (player.powerUps || []).findIndex(p => p.id === puId);
+  if (idx >= 0) player.powerUps.splice(idx, 1);
+  saveGameState();
+}
+
+function hasPowerUp(player, puId) {
+  return (player.powerUps || []).some(p => p.id === puId);
+}
+
+// Show power-up use bar during challenge
+function showPowerUpBar(player, context) {
+  // context: 'before_cat' | 'before_q' | 'during_q'
+  const bar = $('powerUpBar');
+  const pus = (player.powerUps || []);
+  if (pus.length === 0) { bar.classList.add('off'); return; }
+
+  let html = `<span id="powerUpBarLabel" style="font-size:0.75rem;color:rgba(255,255,255,0.4);letter-spacing:1px">YOUR POWER-UPS:</span>`;
+
+  const usable = [];
+  if (context === 'before_cat' && hasPowerUp(player, 'skip')) usable.push('skip');
+  if (context === 'before_cat' && hasPowerUp(player, 'reroll')) usable.push('reroll');
+  if (context === 'before_q' && hasPowerUp(player, 'peek')) usable.push('peek');
+  // sabotage and stealpu can be used anytime between turns — show them always
+  if (hasPowerUp(player, 'sabotage') && context === 'before_cat') usable.push('sabotage');
+  if (hasPowerUp(player, 'stealpu') && context === 'before_cat') usable.push('stealpu');
+
+  pus.forEach(p => {
+    const def = POWERUPS.find(x => x.id === p.id);
+    if (!def) return;
+    const canUse = usable.includes(p.id);
+    html += `<button class="pu-use-btn${canUse?'':' disabled'}" ${canUse ? `onclick="usePowerUp('${p.id}')"` : 'disabled style="opacity:0.3"'}>${def.emoji} ${def.label}</button>`;
+  });
+
+  bar.innerHTML = html;
+  bar.classList.remove('off');
+}
+
+function hidePowerUpBar() { $('powerUpBar').classList.add('off'); }
+
+// ============================================================
+// POWER-UP USAGE
+// ============================================================
+let currentPowerUpContext = null; // {type, player, cat, callback}
+
+function usePowerUp(puId) {
+  const player = players[currentPlayerIndex];
+  const ctx = currentPowerUpContext;
+  hidePowerUpBar();
+
+  switch(puId) {
+    case 'skip':
+      playSnd('snd_pu_skip');
+      removePowerUp(player, 'skip');
+      showEffectScreen('⏭️ SKIP USED!', `${player.name.toUpperCase()} skips this turn — streak preserved.`, 'GOT IT →', () => {
+        showLeaderboard();
+      });
+      break;
+
+    case 'reroll':
+      playSnd('snd_pu_reroll');
+      removePowerUp(player, 'reroll');
+      buildCategoryWheel(false);
+      showScreen('sWheel');
+      renderWheelScreen();
+      break;
+
+    case 'peek':
+      playSnd('snd_pu_peek');
+      removePowerUp(player, 'peek');
+      showPeek(ctx && ctx.answer ? ctx.answer : '???', () => {
+        if (ctx && ctx.callback) ctx.callback();
+      });
+      break;
+
+    case 'sabotage':
+      playSnd('snd_pu_sabotage');
+      removePowerUp(player, 'sabotage');
+      openPickModal('SABOTAGE WHO? 💣', (target) => {
+        target.sabotaged = true;
+        saveGameState();
+        showEffectScreen('💣 SABOTAGE PLANTED!', `${target.name.toUpperCase()} will face a BLACK wheel on their next turn.`, 'EVIL →', () => {
+          buildCategoryWheel(false);
+          showScreen('sWheel');
+          renderWheelScreen();
+        });
+      }, true);
+      break;
+
+    case 'stealpu':
+      playSnd('snd_pu_stealpu');
+      removePowerUp(player, 'stealpu');
+      openPickModal('STEAL POWER-UP FROM WHO? 🔍', (target) => {
+        const tPus = target.powerUps || [];
+        if (tPus.length === 0) {
+          showEffectScreen('🔍 NOTHING TO STEAL', `${target.name.toUpperCase()} has no power-ups.`, 'OK', () => {
+            showLeaderboard();
+          });
+          return;
+        }
+        // Show sub-pick for which power-up to steal
+        const $list = $('pickModalList');
+        $('pickModalTitle').textContent = `WHICH POWER-UP FROM ${target.name.toUpperCase()}?`;
+        $list.innerHTML = tPus.map(p => {
+          const def = POWERUPS.find(x => x.id === p.id);
+          return `<button class="pick-btn" onclick="finishStealPU('${target.name}','${p.id}')">${def?def.emoji:''} ${def?def.label:p.id}</button>`;
+        }).join('');
+        $('pickModal').classList.remove('off');
+      }, true);
+      break;
+  }
+}
+
+function finishStealPU(targetName, puId) {
+  closePickModal();
+  const target = players.find(p => p.name === targetName);
+  const stealer = players[currentPlayerIndex];
+  if (!target) return;
+  removePowerUp(target, puId);
+  const def = POWERUPS.find(x => x.id === puId);
+  if ((stealer.powerUps || []).length < 3) {
+    grantPowerUp(stealer, def);
+    showEffectScreen('🔍 STOLEN!', `${stealer.name.toUpperCase()} stole ${def.emoji} ${def.label} from ${target.name.toUpperCase()}!`, 'NICE →', () => {
+      buildCategoryWheel(false);
+      showScreen('sWheel');
+      renderWheelScreen();
+    });
+  } else {
+    showEffectScreen('🔍 STOLEN (DISCARDED)', `Inventory full! ${def.emoji} ${def.label} was discarded.`, 'OK', () => {
+      buildCategoryWheel(false);
+      showScreen('sWheel');
+      renderWheelScreen();
+    });
+  }
+}
+
+function showPeek(answer, callback) {
+  const overlay = $('peekOverlay');
+  $('peekAnswer').textContent = answer;
+  $('peekCountdown').textContent = '4';
+  overlay.style.display = 'flex';
+  let count = 4;
+  const interval = setInterval(() => {
+    count--;
+    $('peekCountdown').textContent = count;
+    if (count <= 0) {
+      clearInterval(interval);
+      overlay.style.display = 'none';
+      if (callback) callback();
+    }
+  }, 1000);
+}
+
+// ============================================================
+// SABOTAGE REVEAL
+// ============================================================
+function showSabotageReveal(player) {
+  player.sabotaged = false;
+  playSnd('snd_sabotage_rev');
+  showScreen('sSabotageReveal');
+
+  const skipBtn = $('sabSkipBtn');
+  if (hasPowerUp(player, 'skip')) {
+    skipBtn.style.display = 'block';
+    skipBtn.innerHTML = `<button class="btn btn-dark btn-sm" onclick="useSabotageSkip()">⏭️ USE SKIP — ESCAPE!</button>`;
+    window._sabPlayer = player;
+  } else {
+    skipBtn.style.display = 'none';
+  }
+}
+
+function useSabotageSkip() {
+  const player = window._sabPlayer;
+  removePowerUp(player, 'skip');
+  showEffectScreen('⏭️ SABOTAGE ESCAPED!', `${player.name.toUpperCase()} used SKIP to escape the black wheel. Streak preserved!`, 'PHEW →', () => {
+    showLeaderboard();
+  });
+}
+
+function proceedFromSabotage() {
+  // Build black-only category wheel
+  buildCategoryWheel(true);
+  showScreen('sWheel');
+  renderWheelScreen();
+}
+
+// ============================================================
+// CATEGORY FLASH — now requires dismiss button for effect screens
+// ============================================================
+function showCatFlash(emoji, label, playerName, desc, continueFn) {
+  showScreen('sCatFlash');
+  $('cfEmoji').textContent = emoji;
+  $('cfCategory').textContent = label;
+  $('cfPlayer').textContent = playerName ? playerName.toUpperCase() + ' — BRACE YOURSELF' : '';
+  $('cfDesc').textContent = desc || '';
+  if (continueFn) {
+    $('cfContinue').innerHTML = `<button class="btn btn-gold" onclick="(${continueFn.toString()})()">GOT IT →</button>`;
+  } else {
+    $('cfContinue').innerHTML = '';
+  }
+}
+
+// ============================================================
+// GENERIC EFFECT SCREEN (dismissible)
+// ============================================================
+function showEffectScreen(title, body, btnLabel, callback) {
+  showScreen('sCatFlash');
+  $('cfEmoji').textContent = '';
+  $('cfCategory').textContent = title;
+  $('cfPlayer').textContent = '';
+  $('cfDesc').textContent = body;
+  window._effectCallback = callback;
+  $('cfContinue').innerHTML = `<button class="btn btn-gold" onclick="window._effectCallback && window._effectCallback()">${btnLabel || 'GOT IT →'}</button>`;
+}
+
+// ============================================================
+// CATEGORY HANDLING
+// ============================================================
+function handleCategory(cat, diffTier) {
+  const player = players[currentPlayerIndex];
+  currentPowerUpContext = {type: cat.id, player, cat};
+
+  // Multipliers
+  if (['mult_2x','mult_3x','mult_5x','mult_10x'].includes(cat.id)) {
+    const mult = {mult_2x:2,mult_3x:3,mult_5x:5,mult_10x:10}[cat.id];
+    activeMultiplier = mult;
+    playSnd('snd_multiplier');
+    showMultiplier(mult, player, () => runTriviaTurn(player));
+    return;
+  }
+
+  // Kill shot
+  if (cat.id === 'kill_shot' && killShotAvailable) {
+    playSnd('snd_kill_shot');
+    showKillShot(player); return;
+  }
+
+  // Second life
+  if (cat.id === 'second_life') {
+    playSnd('snd_second_life');
+    showSecondLife(() => showChallengeForCategory({id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'}, player));
+    return;
+  }
+
+  // Ghost round — auto effect, no dismiss needed? Actually it needs dismiss per spec
+  if (cat.id === 'ghost_round') {
+    const target = rand(getActivePlayers());
+    const loss = scaleMoney(200);
+    applyBalance(target, -loss, false);
+    showEffectScreen('👻 GHOST ROUND', `${target.name.toUpperCase()} loses ${fmt(loss)} from beyond the grave!`, 'SPOOKY →', () => {
+      showResult(-loss, target, 'Ghost Round');
+    });
+    return;
+  }
+
+  // Freeze
+  if (cat.id === 'freeze') {
+    showEffectScreen('🧊 FREEZE!', 'Pick a player to freeze — then play your turn!', 'PICK →', () => {
+      openPickModal('FREEZE SOMEONE 🧊', (target) => {
+        target.frozen = true;
+        showStreakToast(`🧊 ${target.name} is FROZEN!`);
+        showChallengeForCategory({id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'}, player);
+      }, true);
+    });
+    return;
+  }
+
+  // Bounty
+  if (cat.id === 'bounty') {
+    showEffectScreen('🎯 BOUNTY!', 'Place a bounty on someone, then play your turn!', 'PICK →', () => {
+      openPickModal('PUT A BOUNTY ON 🎯', (target) => {
+        target.bounty = true;
+        showStreakToast(`⚖️ Bounty on ${target.name}!`);
+        showChallengeForCategory({id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'}, player);
+      }, true);
+    });
+    return;
+  }
+
+  // Debt bomb
+  if (cat.id === 'debt_bomb') {
+    showEffectScreen('💣 DEBT BOMB!', 'Plant a debt bomb on someone — it explodes on their next turn!', 'PLANT IT →', () => {
+      openPickModal('PLANT THE BOMB 💣', (target) => {
+        target.debtBomb = true;
+        showStreakToast(`💣 Debt Bomb planted on ${target.name}!`);
+        showChallengeForCategory({id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'}, player);
+      }, true);
+    });
+    return;
+  }
+
+  // Shield
+  if (cat.id === 'shield') {
+    player.shielded = true;
+    showEffectScreen('🛡️ SHIELD GRANTED!', `${player.name.toUpperCase()} is protected from the next negative effect!`, 'GOT IT →', () => {
+      showChallengeForCategory({id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'}, player);
+    });
+    return;
+  }
+
+  // Steal
+  if (cat.id === 'steal') {
+    playSnd('snd_steal');
+    openPickModal('STEAL FROM WHO? 🦝', (target) => {
+      const amt = scaleMoney(300);
+      applyBalance(target, -amt, false);
+      applyBalance(player, amt, false);
+      showEffectScreen('🦝 STEAL!', `${player.name.toUpperCase()} stole ${fmt(amt)} from ${target.name.toUpperCase()}!`, 'HA! →', () => {
+        showResult(amt, player, `Steal from ${target.name}`);
+      });
+    }, true);
+    return;
+  }
+
+  // Grand steal
+  if (cat.id === 'grand_steal') {
+    playSnd('snd_grand_steal');
+    openPickModal('GRAND STEAL — TARGET? 💰', (target) => {
+      const half = Math.floor(target.balance / 2);
+      applyBalance(target, -half, false);
+      applyBalance(player, half, false);
+      showEffectScreen('💰 GRAND STEAL!', `${player.name.toUpperCase()} stole HALF of ${target.name.toUpperCase()}'s money! ${fmt(half)} taken!`, 'RUTHLESS →', () => {
+        showResult(half, player, `Grand Steal from ${target.name}`);
+      });
+    }, true);
+    return;
+  }
+
+  // Wild card
+  if (cat.id === 'wild_card') {
+    const wilds = [
+      {t:'Everyone loses money!', fn:()=>{ getActivePlayers().forEach(p=>{ if(p!==player) applyBalance(p,-scaleMoney(200),false); }); showResult(0,player,'Wild Card: Chaos!'); }},
+      {t:'You trade balances with a player!', fn:()=>{ openPickModal('TRADE BALANCES WITH 🃏', (target)=>{ const tmp=player.balance; player.balance=target.balance; target.balance=tmp; saveGameState(); showResult(0,player,'Balance Swap!'); },true); }},
+      {t:'Everyone gives you $100!', fn:()=>{ getActivePlayers().filter(p=>p!==player).forEach(p=>applyBalance(p,-100,false)); const gain=100*(getActivePlayers().length-1); applyBalance(player,gain,false); showResult(gain,player,'Wild Card Tribute!'); }},
+    ];
+    const w = rand(wilds);
+    showEffectScreen('🃏 WILD CARD!', w.t, 'LET\'S GO →', w.fn);
+    return;
+  }
+
+  // Public defender
+  if (cat.id === 'public_def') {
+    const amt = scaleMoney(400);
+    openPickModal('DEFEND WHO? ⚖️', (target) => {
+      showEffectScreen('⚖️ PUBLIC DEFENDER', `${player.name.toUpperCase()} defends ${target.name.toUpperCase()} — if audience approves, ${target.name} gets ${fmt(amt)}!`, 'DELIBERATE →', () => {
+        const approved = Math.random() < 0.5;
+        if (approved) applyBalance(target, amt, false);
+        showEffectScreen(approved?'⚖️ APPROVED!':'⚖️ OVERRULED!', approved ? `The jury rules in favor! ${target.name} gets ${fmt(amt)}!` : `The jury says NO. No money changes hands.`, 'GOT IT →', () => showLeaderboard());
+      });
+    }, false);
+    return;
+  }
+
+  // Rival
+  if (cat.id === 'rival') {
+    openPickModal('PICK YOUR RIVAL ⚔️', (rival) => {
+      const pot = scaleMoney(400);
+      showEffectScreen(`⚔️ RIVAL CHALLENGE — ${fmt(pot)}`, `${player.name.toUpperCase()} vs ${rival.name.toUpperCase()}\n\nDraw a high card in real life!`, 'DRAW! →', () => {
+        const inner = `<div style="text-align:center;font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold)">${player.name} vs ${rival.name}</div>
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-red" onclick="rivalResult('${player.name}','${rival.name}',${pot})">🃏 ${player.name} WINS</button>
+            <button class="btn btn-blue" onclick="rivalResult('${rival.name}','${player.name}',${pot})">🃏 ${rival.name} WINS</button>
+            <button class="btn btn-dark" onclick="rivalTie('${player.name}','${rival.name}',${pot})">🤝 TIE — REDRAW</button>
+          </div>`;
+        $('cfDesc').innerHTML = inner;
+        $('cfContinue').innerHTML = '';
+      });
+    }, true);
+    return;
+  }
+
+  // Kingmaker
+  if (cat.id === 'kingmaker') {
+    openPickModal('CROWN THE KING 👑', (target) => {
+      const bonus = scaleMoney(1000);
+      applyBalance(target, bonus, false);
+      showEffectScreen('👑 KINGMAKER!', `${player.name.toUpperCase()} crowns ${target.name.toUpperCase()} with ${fmt(bonus)}!`, 'ALL HAIL →', () => showLeaderboard());
+    }, false);
+    return;
+  }
+
+  // All standard: show power-up bar before
+  showChallengeForCategory(cat, player, diffTier);
+}
+
+function rivalResult(winnerName, loserName, pot) {
+  const winner = players.find(p => p.name === winnerName);
+  const loser = players.find(p => p.name === loserName);
+  applyBalance(loser, -pot, false);
+  applyBalance(winner, pot, false);
+  showEffectScreen(`🃏 ${winnerName.toUpperCase()} WINS!`, `${loserName} pays ${winnerName} ${fmt(pot)}!`, 'NEXT →', () => showLeaderboard());
+}
+
+function rivalTie(p1, p2, pot) {
+  showEffectScreen(`🤝 TIE!`, `Draw again — same stakes!`, 'REDRAW →', () => {
+    const inner = `<div style="text-align:center;font-family:'Bebas Neue';font-size:1.2rem;color:var(--gold)">${p1} vs ${p2}</div>
+      <div class="btn-row" style="margin-top:12px">
+        <button class="btn btn-red" onclick="rivalResult('${p1}','${p2}',${pot})">🃏 ${p1} WINS</button>
+        <button class="btn btn-blue" onclick="rivalResult('${p2}','${p1}',${pot})">🃏 ${p2} WINS</button>
+        <button class="btn btn-dark" onclick="rivalTie('${p1}','${p2}',${pot})">🤝 TIE — REDRAW</button>
+      </div>`;
+    $('cfDesc').innerHTML = inner;
+    $('cfContinue').innerHTML = '';
+  });
+}
+
+function showChallengeForCategory(cat, player, diffTier) {
+  currentPowerUpContext = {type: cat.id, player, cat, diffTier};
+  // Show power-up bar for before_cat context
+  showPowerUpBar(player, 'before_cat');
+  showCatFlash(cat.emoji, cat.label, player.name, '');
+  $('cfContinue').innerHTML = `<button class="btn btn-gold" onclick="launchChallenge()">LET'S GO →</button>`;
+}
+
+function launchChallenge() {
+  const ctx = currentPowerUpContext;
+  if (!ctx) return;
+  hidePowerUpBar();
+  runChallenge(ctx.cat, ctx.player, ctx.diffTier);
+}
+
+// ============================================================
+// CHALLENGE RUNNER
+// ============================================================
+function runChallenge(cat, player, diffTier) {
+  switch(cat.id) {
+    case 'trivia_qa': runTriviaQA(player, diffTier); break;
+    case 'trivia_mc': runTriviaMC(player, diffTier); break;
+    case 'trivia_black': runTriviaQA(player, 'red', true); break;
+    case 'penalty': playSnd('snd_penalty'); runPenalty(player); break;
+    case 'chance': playSnd('snd_chance'); runChance(player); break;
+    case 'hot_take': playSnd('snd_hot_take'); runHotTake(player); break;
+    case 'speed_round': runSpeedRound(player); break;
+    case 'gauntlet': playSnd('snd_gauntlet'); runGauntlet(player); break;
+    case 'dbl_nothing': runDoubleOrNothing(player); break;
+    default: runTriviaQA(player, diffTier); break;
+  }
+}
+
+function runTriviaTurn(player) {
+  const useQA = Math.random() < 0.5;
+  const cat = useQA ? {id:'trivia_qa',label:'Q&A TRIVIA',emoji:'📝'} : {id:'trivia_mc',label:'MULTI CHOICE',emoji:'🔤'};
+  showChallengeForCategory(cat, player, null);
+}
+
+// ============================================================
+// TRIVIA — QA
+// ============================================================
+function getQAQuestion(diffTier, blackOnly) {
+  const bank = csvQa.length > 0 ? csvQa : FALLBACK_QA;
+  let pool = bank;
+  if (blackOnly || diffTier === 'red') pool = bank.filter(q => q.difficulty >= 4);
+  else if (diffTier === 'yellow') pool = bank.filter(q => q.difficulty === 3);
+  else if (diffTier === 'green') pool = bank.filter(q => q.difficulty <= 2);
+  if (!pool || pool.length === 0) pool = bank;
+  return rand(pool);
+}
+
+function getMCQuestion(diffTier) {
+  const bank = csvMc.length > 0 ? csvMc : FALLBACK_MC;
+  let pool = bank;
+  if (diffTier === 'red') pool = bank.filter(q => q.difficulty >= 4);
+  else if (diffTier === 'yellow') pool = bank.filter(q => q.difficulty === 3);
+  else if (diffTier === 'green') pool = bank.filter(q => q.difficulty <= 2);
+  if (!pool || pool.length === 0) pool = bank;
+  return rand(pool);
+}
+
+function runTriviaQA(player, diffTier, blackOnly) {
+  const q = getQAQuestion(diffTier, blackOnly);
+  currentPowerUpContext = {...(currentPowerUpContext||{}), answer: q.answer};
+  showChallengeScreen(blackOnly?'⚫ BLACK TRIVIA':'📝 Q&A TRIVIA', player.name, diffTier);
+  $('chalQuestion').textContent = q.question;
+  $('chalChoices').innerHTML = '';
+  $('chalAnswer').style.display = 'none';
+
+  // Power-up bar with peek
+  const peekFn = hasPowerUp(player, 'peek') ? `<button class="pu-use-btn" onclick="usePeekInTrivia('${escQ(q.answer)}')">🔮 PEEK</button>` : '';
+  $('chalActions').innerHTML = `
+    ${peekFn}
+    <button class="btn btn-blue" onclick="revealQAAnswerFirst('${escQ(q.answer)}','${diffTier||'green'}','${blackOnly?'black':''}')">👁 REVEAL ANSWER</button>
+  `;
+  startTimer(() => revealQAAnswerFirst(q.answer, diffTier, blackOnly?'black':''));
+}
+
+function usePeekInTrivia(answer) {
+  const player = players[currentPlayerIndex];
+  stopTimer();
+  showPeek(answer, () => {
+    // restart timer after peek
+    startTimer(() => revealQAAnswerFirst(answer, currentPowerUpContext&&currentPowerUpContext.diffTier, ''));
+  });
+  removePowerUp(player, 'peek');
+}
+
+function revealQAAnswerFirst(answer, diffTier, blackFlag) {
+  stopTimer();
+  $('chalAnswer').style.display = 'block';
+  $('chalAnswer').textContent = '✅ Answer: ' + answer;
+  $('chalActions').innerHTML = `
+    <button class="btn btn-green" onclick="resolveQA(true,'${escQ(answer)}','${diffTier||'green'}','${blackFlag||''}')">✅ CORRECT</button>
+    <button class="btn btn-red" onclick="resolveQA(false,'${escQ(answer)}','${diffTier||'green'}','${blackFlag||''}')">❌ WRONG</button>
+  `;
+}
+
+function resolveQA(correct, answer, diffTier, blackFlag) {
+  stopTimer();
+  const player = players[currentPlayerIndex];
+  const isBlack = blackFlag === 'black';
+  const payout = isBlack ? (correct ? scaleMoney(900) : -scaleMoney(400))
+                         : triviaPayoutByDiff(diffTier, correct);
+  if (correct) {
+    playSnd('snd_correct');
+    updateStreak(player, true);
+    if (isBlack && correct) {
+      // Bonus: steal a power-up from anyone
+      showEffectScreen('⚫ BLACK TRIVIA BEATEN!', `INCREDIBLE! ${player.name.toUpperCase()} answered correctly — steal any power-up from anyone!`, 'CLAIM YOUR PRIZE →', () => {
+        openPickModal('STEAL POWER-UP FROM WHO?', (target) => {
+          const tPus = target.powerUps || [];
+          if (tPus.length === 0) { showResult(payout, player, 'BLACK TRIVIA CORRECT!'); return; }
+          $('pickModalTitle').textContent = 'WHICH POWER-UP?';
+          $('pickModalList').innerHTML = tPus.map(p => {
+            const def = POWERUPS.find(x => x.id === p.id);
+            return `<button class="pick-btn" onclick="finishBlackReward('${target.name}','${p.id}',${payout})">
+              ${def?def.emoji:''} ${def?def.label:p.id}</button>`;
+          }).join('');
+          $('pickModal').classList.remove('off');
+        }, true);
+      });
+      return;
+    }
+  } else {
+    playSnd('snd_wrong');
+    updateStreak(player, false);
+  }
+  const usedMult = correct ? activeMultiplier : 1;
+  const finalAmt = correct ? payout * activeMultiplier : payout;
+  if (correct) activeMultiplier = 1;
+  applyBalance(player, finalAmt, false);
+  setTimeout(() => showResult(finalAmt, player, correct ? (usedMult>1?`×${usedMult} MULTIPLIER!`:'CORRECT!') : 'WRONG!'), 1500);
+}
+
+function finishBlackReward(targetName, puId, payout) {
+  closePickModal();
+  const target = players.find(p => p.name === targetName);
+  const player = players[currentPlayerIndex];
+  const def = POWERUPS.find(x => x.id === puId);
+  if (target) removePowerUp(target, puId);
+  if ((player.powerUps||[]).length < 3) grantPowerUp(player, def);
+  const finalAmt = payout * activeMultiplier;
+  activeMultiplier = 1;
+  applyBalance(player, finalAmt, false);
+  showResult(finalAmt, player, 'BLACK TRIVIA BONUS!');
+}
+
+function triviaPayoutByDiff(diffTier, correct) {
+  if (diffTier === 'yellow') return correct ? scaleMoney(300) : -scaleMoney(125);
+  if (diffTier === 'red') return correct ? scaleMoney(600) : -scaleMoney(250);
+  return correct ? scaleMoney(150) : -scaleMoney(75); // green
+}
+
+// ============================================================
+// TRIVIA — MC
+// ============================================================
+function runTriviaMC(player, diffTier) {
+  const q = getMCQuestion(diffTier);
+  showChallengeScreen('🔤 MULTI CHOICE', player.name, diffTier);
+  $('chalQuestion').textContent = q.question;
+  $('chalAnswer').style.display = 'none';
+  const choices = q.choices && q.choices.length >= 2 ? q.choices : FALLBACK_MC[0].choices;
+  const shuffled = [...choices].sort(()=>Math.random()-0.5);
+  $('chalChoices').innerHTML = shuffled.map(c =>
+    `<button class="choice-btn" onclick="mcAnswer('${escQ(c)}','${escQ(q.answer)}','${diffTier||'green'}')">${c}</button>`
+  ).join('');
+
+  const peekFn = hasPowerUp(player, 'peek')
+    ? `<button class="pu-use-btn" style="margin:4px" onclick="usePeekInMC('${escQ(q.answer)}')">🔮 PEEK</button>` : '';
+  $('chalActions').innerHTML = peekFn;
+  startTimer(() => mcAnswer('__timeout__', q.answer, diffTier));
+}
+
+function usePeekInMC(answer) {
+  const player = players[currentPlayerIndex];
+  removePowerUp(player, 'peek');
+  playSnd('snd_pu_peek');
+  // Highlight correct answer for 4 seconds
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    if (btn.textContent === answer) btn.classList.add('correct');
+    btn.disabled = true;
+  });
+  let count = 4;
+  const interval = setInterval(() => {
+    count--;
+    if (count <= 0) {
+      clearInterval(interval);
+      document.querySelectorAll('.choice-btn').forEach(btn => {
+        btn.classList.remove('correct');
+        btn.disabled = false;
+      });
+    }
+  }, 1000);
+}
+
+function mcAnswer(chosen, correct, diffTier) {
+  stopTimer();
+  const player = players[currentPlayerIndex];
+  const isCorrect = chosen === correct;
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === correct) btn.classList.add('correct');
+    else if (btn.textContent === chosen && !isCorrect) btn.classList.add('wrong');
+  });
+  const payout = triviaPayoutByDiff(diffTier, isCorrect);
+  updateStreak(player, isCorrect);
+  const usedMult = isCorrect ? activeMultiplier : 1;
+  const finalAmt = isCorrect ? payout * activeMultiplier : payout;
+  if (isCorrect) { activeMultiplier = 1; playSnd('snd_correct'); }
+  else { playSnd('snd_wrong'); }
+  applyBalance(player, finalAmt, false);
+  setTimeout(() => showResult(finalAmt, player, isCorrect ? (usedMult>1?`×${usedMult} MULTIPLIER!`:'CORRECT!') : 'WRONG!'), 1500);
+}
+
+// ============================================================
+// CHALLENGE SCREEN HELPERS
+// ============================================================
+function showChallengeScreen(header, playerName, diffTier) {
+  showScreen('sChallenge');
+  $('chalHeader').textContent = header;
+  if (diffTier) {
+    const col = {green:'var(--green)',yellow:'var(--gold)',red:'var(--red)'}[diffTier] || 'var(--gold)';
+    $('chalHeader').style.color = col;
+  } else {
+    $('chalHeader').style.color = 'var(--gold)';
+  }
+  $('chalPlayerName').textContent = playerName.toUpperCase();
+  $('chalQuestion').textContent = '';
+  $('chalChoices').innerHTML = '';
+  $('chalAnswer').style.display = 'none';
+  $('chalAnswer').textContent = '';
+  $('chalActions').innerHTML = '';
+  $('chalExtra').innerHTML = '';
+  $('timer').style.display = 'flex';
+  $('timer').classList.remove('urgent');
+}
+
+function escQ(s) { return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(onExpire) {
+  stopTimer();
+  timeLeft = timerDuration;
+  const el = $('timer');
+  el.style.display = 'flex';
+  el.textContent = timeLeft;
+  el.classList.remove('urgent');
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    el.textContent = timeLeft;
+    if (timeLeft <= 10) {
+      el.classList.add('urgent');
+      playSnd('snd_timer_tick');
+    }
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      onExpire && onExpire();
+    }
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+// ============================================================
+// HOT STREAK
+// ============================================================
+function updateStreak(player, correct) {
+  if (correct) {
+    player.streak = (player.streak||0) + 1;
+    if (player.streak >= 3) {
+      player.streakReady = true;
+      player.streak = 0;
+      playSnd('snd_streak');
+      showStreakToast(`🔥 ${player.name} IS ON A HOT STREAK!`);
+    }
+  } else { player.streak = 0; }
+}
+
+function checkAndApplyStreak(player) {
+  if (player.streakReady) {
+    player.streakReady = false;
+    activeMultiplier = Math.max(activeMultiplier, 3);
+    showStreakToast('🔥 HOT STREAK BONUS! 3× MINIMUM!');
+  }
+}
+
+function showStreakToast(msg) {
+  const t = $('streakToast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timeout);
+  t._timeout = setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ============================================================
+// PENALTY
+// ============================================================
+function runPenalty(player) {
+  const pen = rand(PENALTY_MESSAGES);
+  const amt = scaleMoney(pen.amount);
+  showChallengeScreen('💸 PENALTY', player.name, null);
+  $('chalQuestion').textContent = pen.text;
+  $('chalChoices').innerHTML = '';
+  $('chalActions').innerHTML = `<button class="btn btn-red" onclick="applyPenaltyResult(${-amt})">ACCEPT YOUR FATE</button>`;
+  stopTimer(); $('timer').style.display = 'none';
+}
+function applyPenaltyResult(amt) {
+  const player = players[currentPlayerIndex];
+  applyBalance(player, amt, false);
+  showResult(amt, player, 'PENALTY');
+}
+
+// ============================================================
+// CHANCE
+// ============================================================
+function runChance(player) {
+  const game = rand(['coin','card','dice','number']);
+  showChallengeScreen('🎲 CHANCE', player.name, null);
+  stopTimer(); $('timer').style.display = 'none';
+  if (game === 'coin') {
+    $('chalQuestion').textContent = 'COIN FLIP — Call it!';
+    $('chalActions').innerHTML = `
+      <button class="btn btn-blue" onclick="chanceResult(Math.random()<0.5)">🪙 HEADS</button>
+      <button class="btn btn-red" onclick="chanceResult(Math.random()<0.5)">🪙 TAILS</button>`;
+  } else if (game === 'dice') {
+    $('chalQuestion').textContent = 'DICE ROLL — Pick ODD or EVEN!';
+    $('chalActions').innerHTML = `
+      <button class="btn btn-blue" onclick="dicePickParity('odd')">ODD</button>
+      <button class="btn btn-red" onclick="dicePickParity('even')">EVEN</button>`;
+  } else if (game === 'card') {
+    $('chalQuestion').textContent = 'HIGH CARD — Pick Red or Black!';
+    $('chalActions').innerHTML = `
+      <button class="btn btn-red" onclick="chanceResult(Math.random()<0.5)">♥️ RED</button>
+      <button class="btn btn-dark" onclick="chanceResult(Math.random()<0.5)">♠️ BLACK</button>`;
+  } else {
+    const num = randInt(1,10);
+    $('chalQuestion').textContent = `LUCKY NUMBER — I'm thinking 1-10. What is it?`;
+    $('chalExtra').innerHTML = `<input type="number" min="1" max="10" id="numGuess" style="font-size:2rem;width:80px;text-align:center;background:rgba(255,255,255,0.1);border:2px solid var(--gold);color:#fff;border-radius:6px;padding:8px">`;
+    $('chalActions').innerHTML = `<button class="btn btn-gold" onclick="numberGuess(${num})">GUESS</button>`;
+  }
+}
+function chanceResult(win) {
+  const player = players[currentPlayerIndex];
+  const amt = win ? scaleMoney(400)*activeMultiplier : -scaleMoney(300);
+  if (win) activeMultiplier = 1;
+  applyBalance(player, amt, false);
+  showResult(amt, player, win ? 'LUCKY!' : 'UNLUCKY!');
+}
+function dicePickParity(pick) {
+  $('chalQuestion').textContent = `You picked ${pick.toUpperCase()}. Roll the dice and enter the result!`;
+  $('chalActions').innerHTML = '';
+  $('chalExtra').innerHTML = `
+    <input type="number" min="1" max="6" id="diceResult" style="font-size:3rem;width:90px;text-align:center;background:rgba(255,255,255,0.1);border:2px solid var(--gold);color:#fff;border-radius:6px;padding:8px">
+    <button class="btn btn-gold" onclick="diceRoll('${pick}')" style="margin-top:8px">LOCK IT IN 🎲</button>`;
+}
+function diceRoll(pick) {
+  const roll = parseInt($('diceResult').value);
+  if (!roll || roll < 1 || roll > 6) { alert('Enter 1–6!'); return; }
+  const isOdd = roll % 2 !== 0;
+  const win = (pick==='odd' && isOdd)||(pick==='even' && !isOdd);
+  $('chalQuestion').textContent = `Rolled ${roll}! That's ${isOdd?'ODD':'EVEN'} — you picked ${pick.toUpperCase()}.`;
+  $('chalExtra').innerHTML = '';
+  setTimeout(() => chanceResult(win), 900);
+}
+function numberGuess(correct) {
+  const guess = parseInt($('numGuess').value);
+  $('chalQuestion').textContent = `You guessed ${guess}. The number was ${correct}!`;
+  setTimeout(() => chanceResult(guess===correct), 900);
+}
+
+// ============================================================
+// HOT TAKE
+// ============================================================
+function runHotTake(player) {
+  const bank = csvHt.length > 0 ? csvHt : FALLBACK_HOT_TAKES;
+  const prompt = rand(bank);
+  showChallengeScreen('🌶️ HOT TAKE', player.name, null);
+  $('chalQuestion').textContent = prompt;
+  $('chalChoices').innerHTML = '';
+  stopTimer(); $('timer').style.display = 'none';
+  $('chalActions').innerHTML = `
+    <button class="btn btn-green" onclick="hotTakeResult(true)">👏 CROWD APPROVES</button>
+    <button class="btn btn-red" onclick="hotTakeResult(false)">👎 CROWD DISAPPROVES</button>`;
+}
+function hotTakeResult(approved) {
+  const player = players[currentPlayerIndex];
+  const amt = approved ? scaleMoney(300) : -scaleMoney(200);
+  applyBalance(player, amt, false);
+  showResult(amt, player, approved ? 'CROWD APPROVED!' : 'CROWD DISAPPROVED');
+}
+
+// ============================================================
+// SPEED ROUND
+// ============================================================
+let speedCorrect = 0, speedQIdx = 0, speedQuestions = [], speedTimerInterval = null, speedTimeLeft = 0;
+
+function runSpeedRound(player) {
+  const bank = [...(csvQa.length>0?csvQa:FALLBACK_QA),...(csvMc.length>0?csvMc:FALLBACK_MC)];
+  speedQuestions = [];
+  while (speedQuestions.length < 5) speedQuestions.push(rand(bank));
+  speedCorrect = 0; speedQIdx = 0;
+  showChallengeScreen('⚡ SPEED ROUND', player.name, null);
+  stopTimer(); $('timer').style.display = 'none';
+  $('chalExtra').innerHTML = `<div style="color:rgba(255,255,255,0.6)">5 questions · ${timerDuration}s total</div>`;
+  startSpeedTimer(player);
+  showSpeedQuestion(player);
+}
+function startSpeedTimer(player) {
+  speedTimeLeft = timerDuration;
+  clearInterval(speedTimerInterval);
+  const el = $('timer'); el.style.display = 'flex'; el.textContent = speedTimeLeft; el.classList.remove('urgent');
+  speedTimerInterval = setInterval(() => {
+    speedTimeLeft--;
+    el.textContent = speedTimeLeft;
+    if (speedTimeLeft <= 10) el.classList.add('urgent');
+    if (speedTimeLeft <= 0) { clearInterval(speedTimerInterval); finishSpeedRound(player); }
+  }, 1000);
+}
+function showSpeedQuestion(player) {
+  if (speedQIdx >= 5) { clearInterval(speedTimerInterval); finishSpeedRound(player); return; }
+  const q = speedQuestions[speedQIdx];
+  $('chalQuestion').textContent = `Q${speedQIdx+1}/5: ${q.question}`;
+  if (q.choices && q.choices.length >= 2) {
+    const s = [...q.choices].sort(()=>Math.random()-0.5);
+    $('chalChoices').innerHTML = s.map(c=>`<button class="choice-btn" onclick="speedAnswer('${escQ(c)}','${escQ(q.answer)}',this)">${c}</button>`).join('');
+    $('chalActions').innerHTML = '';
+  } else {
+    $('chalChoices').innerHTML = '';
+    $('chalActions').innerHTML = `
+      <button class="btn btn-green" onclick="speedAnswer('correct','correct')">✅ CORRECT</button>
+      <button class="btn btn-red" onclick="speedAnswer('wrong','correct')">❌ WRONG / SKIP</button>`;
+  }
+}
+function speedAnswer(chosen, correct, btn) {
+  if (chosen===correct||chosen==='correct') speedCorrect++;
+  if (btn) { btn.classList.add(chosen===correct?'correct':'wrong'); setTimeout(()=>{ speedQIdx++; showSpeedQuestion(players[currentPlayerIndex]); },300); }
+  else { speedQIdx++; showSpeedQuestion(players[currentPlayerIndex]); }
+}
+function finishSpeedRound(player) {
+  clearInterval(speedTimerInterval);
+  const amt = speedCorrect > 0 ? scaleMoney(200)*speedCorrect*activeMultiplier : -scaleMoney(100);
+  if (speedCorrect > 0) activeMultiplier = 1;
+  applyBalance(player, amt, false);
+  showResult(amt, player, `${speedCorrect}/5 CORRECT!`);
+}
+
+// ============================================================
+// GAUNTLET
+// ============================================================
+let gauntletCorrect = 0, gauntletQIdx = 0, gauntletQuestions = [], gauntletPot = 0, gauntletPlayer = null;
+
+function runGauntlet(player) {
+  gauntletPlayer = player;
+  const bank = [...(csvQa.length>0?csvQa:FALLBACK_QA),...(csvMc.length>0?csvMc:FALLBACK_MC)];
+  gauntletQuestions = [];
+  while (gauntletQuestions.length < 5) gauntletQuestions.push(rand(bank));
+  gauntletCorrect = 0; gauntletQIdx = 0;
+  gauntletPot = scaleMoney(300);
+  showChallengeScreen('⚔️ GAUNTLET', player.name, null);
+  stopTimer(); $('timer').style.display = 'none';
+  $('chalExtra').innerHTML = `<div id="gauntletPot" style="font-family:Bebas Neue;font-size:2rem;color:var(--gold)">POT: ${fmt(gauntletPot)}</div>`;
+  showGauntletQ();
+}
+function showGauntletQ() {
+  if (gauntletQIdx >= 5) { finishGauntlet(true); return; }
+  const q = gauntletQuestions[gauntletQIdx];
+  $('chalQuestion').textContent = `Q${gauntletQIdx+1}/5: ${q.question}`;
+  if (q.choices && q.choices.length >= 2) {
+    $('chalChoices').innerHTML = [...q.choices].sort(()=>Math.random()-0.5).map(c=>`<button class="choice-btn" onclick="gauntletAnswer('${escQ(c)}','${escQ(q.answer)}')">${c}</button>`).join('');
+    $('chalActions').innerHTML = '';
+  } else {
+    $('chalChoices').innerHTML = '';
+    $('chalActions').innerHTML = `
+      <button class="btn btn-green" onclick="gauntletAnswer('correct','correct')">✅ CORRECT</button>
+      <button class="btn btn-red" onclick="gauntletAnswer('wrong','correct')">❌ WRONG</button>`;
+  }
+}
+function gauntletAnswer(chosen, correct) {
+  if (chosen===correct||chosen==='correct') {
+    gauntletPot += scaleMoney(500); gauntletQIdx++;
+    if ($('gauntletPot')) $('gauntletPot').textContent = 'POT: ' + fmt(gauntletPot);
+    showGauntletQ();
+  } else { finishGauntlet(false); }
+}
+function finishGauntlet(completed) {
+  const player = gauntletPlayer;
+  const amt = completed ? gauntletPot * activeMultiplier : -scaleMoney(400);
+  if (completed) activeMultiplier = 1;
+  applyBalance(player, amt, false);
+  showResult(amt, player, completed ? '⚔️ GAUNTLET COMPLETE!' : 'GAUNTLET FAILED');
+}
+
+// ============================================================
+// DOUBLE OR NOTHING
+// ============================================================
+function runDoubleOrNothing(player) {
+  showChallengeScreen('🪙 DBL OR NOTHING', player.name, null);
+  $('chalQuestion').textContent = `${player.name} has ${fmt(player.balance)}. Go ALL IN for double or lose it all?`;
+  stopTimer(); $('timer').style.display = 'none';
+  $('chalActions').innerHTML = `
+    <button class="btn btn-gold" onclick="dblOrNothingResult(true)">💰 DOUBLE DOWN</button>
+    <button class="btn btn-dark" onclick="showLeaderboard()">✋ CHICKEN OUT</button>`;
+}
+function dblOrNothingResult(goForIt) {
+  const player = players[currentPlayerIndex];
+  if (!goForIt) { showLeaderboard(); return; }
+  const win = Math.random() < 0.5;
+  const amt = win ? player.balance : -player.balance;
+  applyBalance(player, amt, false);
+  showResult(amt, player, win ? '🤑 DOUBLED!' : '💀 BUSTED!');
+}
+
+// ============================================================
+// RESULT SCREEN
+// ============================================================
+function showResult(amount, player, label) {
+  hidePowerUpBar();
+  showScreen('sResult');
+  $('resultPlayer').textContent = player.name.toUpperCase();
+  $('resultLabel').textContent = label;
+  const el = $('resultAmount');
+  el.textContent = (amount >= 0 ? '+' : '') + fmt(amount);
+  el.className = amount >= 0 ? 'win' : 'loss';
+  $('resultBalance').textContent = 'Balance: ' + fmt(player.balance);
+  checkWinner();
+  saveGameState();
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+function showLeaderboard() {
+  hidePowerUpBar();
+  const sorted = [...players].sort((a,b)=>b.balance-a.balance);
+  const maxBal = Math.max(...players.map(p=>p.balance));
+  $('lbList').innerHTML = sorted.map((p,i) => {
+    const isLeader = i===0 && !p.eliminated;
+    const pct = maxBal > 0 ? (p.balance/maxBal*100) : 0;
+    const streakTxt = p.streakReady ? '🔥READY' : (p.streak > 0 ? `🔥${p.streak}` : '');
+    return `<div class="lb-row${p.eliminated?' eliminated':''}${isLeader?' lb-leader':''}">
+      <span class="lb-rank">${i+1}</span>
+      <span class="lb-name">${p.name.toUpperCase()}</span>
+      <span class="lb-spins">×${p.spinCount||0}</span>
+      <span class="lb-powerups">${getPowerUpIcons(p)}</span>
+      <span class="lb-badges">${getBadges(p)}</span>
+      <span class="lb-streak">${streakTxt}</span>
+      <span class="lb-bal">${fmt(p.balance)}</span>
+      <div class="lb-bar" style="width:${pct}%"></div>
+    </div>`;
+  }).join('');
+  showScreen('sLeaderboard');
+}
+
+function nextRound() {
+  buildNameWheel();
+  showScreen('sWheel');
+  renderWheelScreen();
+}
+
+// ============================================================
+// MULTIPLIER
+// ============================================================
+function showMultiplier(mult, player, callback) {
+  showScreen('sMultiplier');
+  $('multLabel').textContent = 'MULTIPLIER UNLOCKED';
+  $('multValue').textContent = mult + '×';
+  $('multPlayerNote').textContent = player.name.toUpperCase() + ' — NOW PLAY YOUR TURN!';
+  const btn = $('multContinueBtn');
+  btn.onclick = () => callback && callback();
+}
+
+// ============================================================
+// KILL SHOT
+// ============================================================
+function showKillShot(player) {
+  showScreen('sKillShot');
+  $('ksPlayer').textContent = player.name.toUpperCase();
+}
+function killShotPickTarget() {
+  openPickModal('CHOOSE YOUR TARGET ☠️', (target) => {
+    killShotAvailable = false;
+    target.eliminated = true;
+    target.balance = 0;
+    playSnd('snd_elim');
+    showElimination(target);
+  }, true);
+}
+function killShotSpinRandom() {
+  const others = getActivePlayers().filter(p => p !== players[currentPlayerIndex]);
+  if (others.length === 0) { showStreakToast('No targets!'); return; }
+  const target = rand(others);
+  killShotAvailable = false;
+  target.eliminated = true;
+  target.balance = 0;
+  $('ksSpinResult').textContent = '☠️ Spinning... ' + target.name + ' is ELIMINATED!';
+  playSnd('snd_elim');
+  setTimeout(() => showElimination(target), 1500);
+}
+function killShotRefuse() {
+  killShotAvailable = false;
+  showStreakToast('✋ Kill shot refused. Moving on.');
+  buildNameWheel();
+  showScreen('sWheel');
+  renderWheelScreen();
+}
+
+// ============================================================
+// ORACLE
+// ============================================================
+function showOracle(callback) {
+  showScreen('sOracle');
+  $('oraclePrediction').textContent = rand(ORACLE_PREDICTIONS);
+  window._oracleCallback = callback;
+}
+function dismissOracle() {
+  if (window._oracleCallback) { window._oracleCallback(); window._oracleCallback = null; }
+}
+
+// ============================================================
+// SECOND LIFE
+// ============================================================
+function showSecondLife(callback) {
+  const elim = players.filter(p => p.eliminated);
+  if (elim.length === 0) { callback && callback(); return; }
+  secondLifePlayer = elim[elim.length - 1];
+  const minBal = Math.min(...getActivePlayers().map(p => p.balance));
+  playSnd('snd_second_life');
+  showScreen('sSecondLife');
+  $('slPlayer').textContent = secondLifePlayer.name.toUpperCase() + ' RETURNS!';
+  $('slBalance').textContent = 'Revived at: ' + fmt(Math.max(100, Math.round(minBal*0.5)));
+  window._slCallback = callback;
+}
+function confirmSecondLife() {
+  if (secondLifePlayer) {
+    const minBal = Math.min(...getActivePlayers().map(p => p.balance));
+    secondLifePlayer.balance = Math.max(100, Math.round(minBal * 0.5));
+    secondLifePlayer.eliminated = false;
+    secondLifePlayer.frozen = false;
+    buildNameWheel();
+    showStreakToast(`👼 ${secondLifePlayer.name} is BACK!`);
+  }
+  if (window._slCallback) { window._slCallback(); window._slCallback = null; }
+}
+
+// ============================================================
+// CRYBABY
+// ============================================================
+function openCrybaby() {
+  openPickModal("WHO'S BEING A CRYBABY? 👶", (target) => {
+    crybabyTargetIndex = players.indexOf(target);
+    showScreen('sCrybaby');
+    $('cbPlayer').textContent = target.name.toUpperCase();
+    $('cbCoin').style.display = 'none';
+    $('cbResult').style.display = 'none';
+    $('cbFlipBtn').style.display = 'block';
+    $('cbDoneBtn').style.display = 'none';
+    $('cbResult').textContent = '';
+  }, false);
+}
+function flipCrybabyConin() {
+  playSnd('snd_crybaby');
+  $('cbFlipBtn').style.display = 'none';
+  $('cbCoin').style.display = 'block';
+  setTimeout(() => {
+    $('cbCoin').style.display = 'none';
+    const heads = Math.random() < 0.5;
+    const player = players[crybabyTargetIndex];
+    $('cbResult').style.display = 'block';
+    if (heads) {
+      $('cbResult').textContent = '🪙 HEADS — RULE STANDS. ' + player.name.toUpperCase() + ' WINS!';
+      $('cbResult').style.color = 'var(--green)';
+    } else {
+      const loss = scaleMoney(500);
+      applyBalance(player, -loss, false);
+      player.crybaby = true;
+      $('cbResult').textContent = '🪙 TAILS — ' + player.name.toUpperCase() + ' LOSES ' + fmt(loss) + ' AND EARNS THE 👶 BADGE!';
+      $('cbResult').style.color = 'var(--red)';
+    }
+    $('cbDoneBtn').style.display = 'block';
+  }, 2000);
+}
+function closeCrybaby() {
+  showScreen('sWheel');
+  buildNameWheel();
+  renderWheelScreen();
+}
+
+// ============================================================
+// PICK MODAL
+// ============================================================
+function openPickModal(title, callback, excludeCurrent) {
+  pickCallback = callback;
+  $('pickModalTitle').textContent = title;
+  const targets = players.filter(p => !p.eliminated && (excludeCurrent ? p !== players[currentPlayerIndex] : true));
+  $('pickModalList').innerHTML = targets.map(p =>
+    `<button class="pick-btn" onclick="pickPlayer(${players.indexOf(p)})">${p.name} ${getBadges(p)} ${getPowerUpIcons(p)} — ${fmt(p.balance)}</button>`
+  ).join('');
+  $('pickModal').classList.remove('off');
+}
+function pickPlayer(idx) {
+  closePickModal();
+  if (pickCallback) pickCallback(players[idx]);
+  pickCallback = null;
+}
+function closePickModal() { $('pickModal').classList.add('off'); }
+
+// ============================================================
+// ELIMINATION
+// ============================================================
+function showElimination(player) {
+  const overlay = $('elimOverlay');
+  overlay.style.display = 'flex';
+  $('elimName').textContent = player.name.toUpperCase();
+  saveGameState();
+}
+function dismissElim() {
+  $('elimOverlay').style.display = 'none';
+  checkWinner();
+  buildNameWheel();
+  showScreen('sWheel');
+  renderWheelScreen();
+}
+
+// ============================================================
+// WINNER
+// ============================================================
+function showWinner(player) {
+  playSnd('snd_winner');
+  showScreen('sWinner');
+  $('winName').textContent = player.name.toUpperCase();
+  spawnConfetti();
+  localStorage.removeItem(SAVE_KEY);
+}
+function spawnConfetti() {
+  const c = $('confettiContainer'); c.innerHTML = '';
+  const colors = ['var(--red)','var(--gold)','var(--blue)','var(--green)','var(--orange)','var(--purple)','var(--pink)'];
+  for (let i = 0; i < 80; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.style.left = Math.random()*100+'vw';
+    el.style.top = '-20px';
+    el.style.background = rand(colors);
+    el.style.animationDuration = (2+Math.random()*3)+'s';
+    el.style.animationDelay = Math.random()*2+'s';
+    el.style.width = el.style.height = (8+Math.random()*12)+'px';
+    c.appendChild(el);
+  }
+}
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function saveGameState() {
+  if (!players || players.length === 0) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      players, winCondition, startingBalance, timerDuration,
+      killShotAvailable, oracleFired, activeMultiplier, gameStartTime,
+      completedRounds, inGame: true
+    }));
+  } catch(e) {}
+}
+
+function loadGameState() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s.inGame || !s.players || s.players.length < 2) return false;
+    players = s.players;
+    winCondition = s.winCondition || 'million';
+    startingBalance = s.startingBalance || 1000;
+    timerDuration = s.timerDuration || 60;
+    killShotAvailable = s.killShotAvailable !== undefined ? s.killShotAvailable : true;
+    oracleFired = s.oracleFired || false;
+    activeMultiplier = s.activeMultiplier || 1;
+    gameStartTime = s.gameStartTime || Date.now();
+    completedRounds = s.completedRounds || 0;
+    return true;
+  } catch(e) { return false; }
+}
+
+function resetGame() {
+  if (!confirm('Reset the game? Clears all scores and returns to setup.')) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
+
+// ============================================================
+// RESUME GAME
+// ============================================================
+function resumeGame() {
+  document.querySelectorAll('[data-resume]').forEach(el => el.remove());
+  showScreen('sWheel');
+  $('crybabyBtn').style.display = 'block';
+  $('resetBtn') && ($('resetBtn').style.display = 'block');
+  wheelPhase = 'name';
+  buildNameWheel();
+  renderWheelScreen();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  $('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') addPlayer(); });
+
+  // Reset button
+  const resetBtn = document.createElement('button');
+  resetBtn.id = 'resetBtn';
+  resetBtn.textContent = '↺ RESET';
+  resetBtn.style.cssText = 'position:fixed;bottom:20px;left:20px;font-family:Bebas Neue;font-size:0.9rem;letter-spacing:1px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.4);border-radius:20px;padding:8px 14px;cursor:pointer;z-index:100;touch-action:manipulation;display:none';
+  resetBtn.onclick = resetGame;
+  document.body.appendChild(resetBtn);
+
+  // Sound settings button in-game (bottom left area, only during wheel)
+  // It's accessible via setup screen
+
+  if (loadGameState()) {
+    const banner = document.createElement('div');
+    banner.setAttribute('data-resume','1');
+    banner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:1000';
+    banner.innerHTML = `
+      <div style="font-family:'Bebas Neue';font-size:3rem;color:var(--gold)">🔥 GAME IN PROGRESS</div>
+      <div style="font-size:1rem;color:rgba(255,255,255,0.6);max-width:500px;text-align:center">
+        ${players.map(p=>p.name+(p.eliminated?' 💀':' — '+fmt(p.balance))).join(' · ')}
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+        <button class="btn btn-gold" onclick="resumeGame()">▶ RESUME GAME</button>
+        <button class="btn btn-dark" onclick="this.closest('[data-resume]').remove();showScreen('sSetup')">NEW GAME</button>
+      </div>`;
+    document.body.appendChild(banner);
+  } else {
+    showScreen('sSetup');
+  }
+});
+</script>
+</body>
+</html>
