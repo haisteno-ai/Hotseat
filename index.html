@@ -2493,6 +2493,62 @@ body.theme-tier-7 .turn-indicator {
   color: #FFF;
 }
 
+/* ─── LOW QUESTION POOL WARNING PILL (sidebar) ─── */
+#low-pool-pill {
+  display: none;
+  margin-top: 1rem;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, rgba(255,140,50,0.25), rgba(255,70,70,0.2));
+  border: 2px solid #FF8C32;
+  border-radius: 12px;
+  box-shadow: 0 0 14px rgba(255,140,50,0.3);
+  animation: low-pool-pulse 2.5s ease-in-out infinite;
+}
+@keyframes low-pool-pulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(255,140,50,0.3); }
+  50%      { box-shadow: 0 0 22px rgba(255,140,50,0.55); }
+}
+.low-pool-title {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #FFD78E;
+  margin-bottom: 8px;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+.low-pool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.low-pool-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  font-family: var(--font-fun);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.low-pool-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 7px;
+  background: rgba(255,217,61,0.2);
+  color: #FFD93D;
+  border-radius: 999px;
+  border: 1px solid rgba(255,217,61,0.4);
+}
+.low-pool-count.critical {
+  background: rgba(255,69,69,0.25);
+  color: #FFCCCC;
+  border-color: var(--red);
+}
+
 </style>
 </head>
 <body>
@@ -2872,6 +2928,16 @@ Let another player pick your next spin.
         <input type="number" id="settings-ghost-pot-pct" value="10" min="5" max="30">
         <span style="font-size:12px;color:var(--text3);">% per Poltergeist per player</span>
       </div>
+    </div>
+
+    <!-- Question History -->
+    <div class="settings-section">
+      <h3>❓ QUESTION HISTORY</h3>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:1rem;">
+        Questions you've seen are tracked across games so you don't get repeats. When a category runs low you'll get a warning so you can add more. Reset the history here if you've loaded new question packs or want a fresh slate.
+      </p>
+      <div id="seen-questions-stats" style="font-family:var(--font-mono);font-size:12px;color:var(--text3);margin-bottom:12px;"></div>
+      <button class="btn btn-ghost" onclick="resetSeenQuestions(); renderSeenStats();">🔄 Reset Question History</button>
     </div>
 
   </div>
@@ -3495,6 +3561,8 @@ let G = {
   soundUrls: {},
   isSecondSpin: false,
   currentVariableSlots: null, // 5 random IDs from cumulative tier pool, rerolled each turn
+  seenQuestions: {},          // { [type]: Set<normalizedQuestionText> } — persisted to localStorage
+  lowPoolWarned: {},          // { [type]: number } — tracks which warning threshold was last fired per type
 };
 
 // ─── PERSISTENCE ───
@@ -3635,6 +3703,7 @@ function startGame() {
   G.currentMultiplier = 1;
   G.isSecondSpin = false;
   G.currentVariableSlots = null; // force fresh roll
+  G.killShotUsed = false; // Kill Shot available once per game
   if (typeof rollVariableSlots === 'function') rollVariableSlots();
 
   showScreen('screen-game');
@@ -3643,6 +3712,9 @@ function startGame() {
   updateTurnIndicator();
   applyThemeTierForPlayer(currentPlayer());
   drawWheel(false);
+  // Reset warning throttle for this new game + show pill if needed based on saved seen state
+  G.lowPoolWarned = {};
+  updateLowPoolPill();
 
   // Schedule Oracle
   const oracleTurn = Math.floor(G.players.length * 4 + Math.random() * G.players.length * 2);
@@ -3819,10 +3891,12 @@ function rollVariableSlots() {
   const pool = getCumulativePool();
   const hasGhosts = G.ghosts && G.ghosts.length > 0;
   // Respect enabled toggles + $5K gate + Second Life only when ghosts exist
+  // + Kill Shot only if not already used
   const enabled = [...pool]
     .filter(id => G.enabledWheelCats.has(id))
     .filter(id => tier !== 'early' || !GATED_ABOVE_5K.has(id))
     .filter(id => id !== 'secondLife' || hasGhosts)
+    .filter(id => id !== 'killShot' || !G.killShotUsed)
     .filter(id => !WHEEL_FIXED.includes(id));
 
   // Shuffle and take 5
@@ -4193,12 +4267,183 @@ function showChallengeForCategory(cat) {
 }
 
 // ─── QUESTION HELPERS ───
+// ═══════════════════════════════════════════════════════
+// SEEN QUESTIONS TRACKING (persists across sessions via localStorage)
+// ═══════════════════════════════════════════════════════
+const SEEN_STORAGE_KEY = 'hotseat-seen-questions-v1';
+
+// Normalize a question to a stable dedupe key.
+// Uses the question text (or statement) lowercased and whitespace-collapsed.
+function questionKey(q) {
+  if (!q) return '';
+  const text = (typeof q === 'string') ? q : (q.question || q.statement || JSON.stringify(q));
+  return text.toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+// Load seen questions from localStorage into G.seenQuestions (Set-per-type).
+function loadSeenQuestions() {
+  try {
+    const raw = localStorage.getItem(SEEN_STORAGE_KEY);
+    if (!raw) { G.seenQuestions = {}; return; }
+    const obj = JSON.parse(raw);
+    G.seenQuestions = {};
+    Object.keys(obj).forEach(type => {
+      G.seenQuestions[type] = new Set(obj[type] || []);
+    });
+  } catch (e) {
+    console.warn('Could not load seen questions:', e);
+    G.seenQuestions = {};
+  }
+}
+
+// Persist seen questions to localStorage.
+function saveSeenQuestions() {
+  try {
+    const obj = {};
+    Object.keys(G.seenQuestions || {}).forEach(type => {
+      obj[type] = [...(G.seenQuestions[type] || new Set())];
+    });
+    localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(obj));
+  } catch (e) {
+    console.warn('Could not save seen questions:', e);
+  }
+}
+
+// Reset all seen markings (used by the Settings button).
+function resetSeenQuestions() {
+  G.seenQuestions = {};
+  G.lowPoolWarned = {};
+  try { localStorage.removeItem(SEEN_STORAGE_KEY); } catch (e) {}
+  // Hide any persistent warning pills
+  const pill = document.getElementById('low-pool-pill');
+  if (pill) pill.style.display = 'none';
+}
+
+// Mark a question as seen (for its type).
+function markQuestionSeen(type, q) {
+  if (!G.seenQuestions[type]) G.seenQuestions[type] = new Set();
+  G.seenQuestions[type].add(questionKey(q));
+  saveSeenQuestions();
+  checkLowQuestionPool(type);
+}
+
+// Check unseen pool size for a type and fire warnings at 5, 2, 0.
+function checkLowQuestionPool(type) {
+  const sets = (G.questionSets[type] || []).filter(s => s.enabled);
+  let pool = [];
+  sets.forEach(s => pool = pool.concat(s.questions || []));
+  const totalPool = pool.length;
+  if (totalPool === 0) return; // No questions at all — handled elsewhere
+  const seen = G.seenQuestions[type] || new Set();
+  const remaining = pool.filter(q => !seen.has(questionKey(q))).length;
+
+  const lastWarned = G.lowPoolWarned[type];
+  // Thresholds: 5, 2, 0 — fire once at each. Only fire DOWNWARD (so 5 → 2 fires 2; 2 → 5 does nothing).
+  let threshold = null;
+  if (remaining === 0 && lastWarned !== 0) threshold = 0;
+  else if (remaining <= 2 && (lastWarned === undefined || lastWarned > 2)) threshold = 2;
+  else if (remaining <= 5 && (lastWarned === undefined || lastWarned > 5)) threshold = 5;
+  if (threshold === null) return;
+
+  G.lowPoolWarned[type] = threshold;
+  fireLowPoolWarning(type, remaining, threshold);
+}
+
+function fireLowPoolWarning(type, remaining, threshold) {
+  const typeLabels = {
+    trivia:'Trivia', mc:'Multiple Choice', math:'Math', hottake:'Hot Take',
+    pubdef:'Public Defender', penalty:'Penalty', wildcard:'Wild Card',
+    spooky:'Spooky Trivia', famousghosts:'Famous Ghosts'
+  };
+  const label = typeLabels[type] || type;
+  let emoji, msg;
+  if (threshold === 0) {
+    emoji = '🚨';
+    msg = `${label} questions EXHAUSTED — recycling from the start. Add more in Settings!`;
+  } else if (threshold === 2) {
+    emoji = '⚠️';
+    msg = `Only ${remaining} fresh ${label} questions left. Add more soon!`;
+  } else {
+    emoji = '💡';
+    msg = `${label} running low — ${remaining} fresh questions left.`;
+  }
+
+  // Toast
+  if (typeof showCallout === 'function') showCallout(emoji, msg);
+  // Persistent sidebar pill
+  updateLowPoolPill();
+}
+
+// Rebuild the sidebar pill showing all categories currently below 5 remaining.
+function updateLowPoolPill() {
+  let pill = document.getElementById('low-pool-pill');
+  if (!pill) {
+    // Lazy-create it
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    pill = document.createElement('div');
+    pill.id = 'low-pool-pill';
+    sidebar.appendChild(pill);
+  }
+
+  const typeLabels = {
+    trivia:'Trivia', mc:'MC', math:'Math', hottake:'Hot Take',
+    pubdef:'PubDef', penalty:'Penalty', wildcard:'Wild Card',
+    spooky:'Spooky', famousghosts:'Ghosts'
+  };
+
+  const issues = [];
+  Object.keys(G.questionSets || {}).forEach(type => {
+    const sets = (G.questionSets[type] || []).filter(s => s.enabled);
+    let pool = [];
+    sets.forEach(s => pool = pool.concat(s.questions || []));
+    if (pool.length === 0) return;
+    const seen = G.seenQuestions[type] || new Set();
+    const remaining = pool.filter(q => !seen.has(questionKey(q))).length;
+    if (remaining <= 5) {
+      issues.push({ type, label: typeLabels[type] || type, remaining });
+    }
+  });
+
+  if (issues.length === 0) {
+    pill.style.display = 'none';
+    return;
+  }
+
+  pill.style.display = 'block';
+  pill.innerHTML = `
+    <div class="low-pool-title">⚠ Low on Questions</div>
+    <div class="low-pool-list">
+      ${issues.map(i => `<div class="low-pool-item"><span>${i.label}</span><span class="low-pool-count ${i.remaining===0?'critical':''}">${i.remaining}</span></div>`).join('')}
+    </div>
+  `;
+}
+
+// Draw a question of given type, filtering out ones already seen.
+// If the unseen pool is empty, falls back to the full pool (recycling) and warns.
 function drawQuestion(type) {
   const sets = (G.questionSets[type] || []).filter(s => s.enabled);
   let pool = [];
-  sets.forEach(s => pool = pool.concat(s.questions));
+  sets.forEach(s => pool = pool.concat(s.questions || []));
   if (pool.length === 0) return null;
-  const q = pool[Math.floor(Math.random() * pool.length)];
+
+  const seen = G.seenQuestions[type] || new Set();
+  const fresh = pool.filter(q => !seen.has(questionKey(q)));
+
+  let q;
+  if (fresh.length > 0) {
+    q = fresh[Math.floor(Math.random() * fresh.length)];
+  } else {
+    // Exhausted — reset seen set for this type and recycle
+    G.seenQuestions[type] = new Set();
+    G.lowPoolWarned[type] = 999; // allow warnings to re-fire on the fresh cycle
+    saveSeenQuestions();
+    // Update the pill since we just reset
+    updateLowPoolPill();
+    q = pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  markQuestionSeen(type, q);
   return q;
 }
 
@@ -4559,54 +4804,26 @@ function resolvePubDef(correct, partnerId) {
 }
 
 // ─── DOUBLE OR NOTHING ───
-function buildDoubleOrNothing() {
-  const p = currentPlayer();
-  if (p.balance === 0) {
-    return `<div class="chance-card"><div class="chance-title">DOUBLE OR NOTHING</div><div class="chance-description">No balance to double. Flip is skipped.</div><div class="challenge-actions" style="justify-content:center;"><button class="btn btn-ghost" onclick="nextTurn()">Skip →</button></div></div>`;
-  }
-  return `
-    <div class="chance-card">
-      <span class="chance-icon">🪙</span>
-      <div class="chance-title">DOUBLE OR NOTHING</div>
-      <div class="chance-description">${p.name} is wagering $${p.balance.toLocaleString()}.<br>Win = $${(p.balance*2).toLocaleString()} | Lose = $0 (eliminated if below safe floor)</div>
-      <div class="challenge-actions" style="justify-content:center;gap:12px;">
-        <button class="btn btn-gold" onclick="resolveDoubleOrNothing(true)">WIN 🎉</button>
-        <button class="btn btn-danger" onclick="resolveDoubleOrNothing(false)">LOSE 💀</button>
-      </div>
-    </div>`;
-}
-
-function resolveDoubleOrNothing(win) {
-  const p = currentPlayer();
-  if (win) {
-    p.balance *= 2;
-    showMoneyPop('DOUBLED! $'+p.balance.toLocaleString(),'#F5A623');
-  } else {
-    const floor = p.safeFloor >= 0 ? MILESTONES[p.safeFloor] : 0;
-    p.balance = floor;
-    if (floor === 0) eliminatePlayer(p);
-    showMoneyPop(floor>0?'Floor: $'+floor.toLocaleString():'ELIMINATED','#E53935');
-  }
-  renderSidebar();
-  setTimeout(nextTurn, 1500);
-}
-
 // ─── PENALTY ───
 function buildPenalty() {
+  const p = currentPlayer();
+  // 10% of current balance, floored at the base settings penalty. Always stings the same relative amount.
+  const loss = getBalancePenalty(p, 0.10);
+  const lossStr = loss.toLocaleString();
+
   const sets = (G.questionSets['penalty'] || []).filter(s => s.enabled);
   let msgs = [];
   sets.forEach(s => msgs = msgs.concat(s.questions || s.messages || []));
   const defaults = [
-    "Someone told your secrets. Lose $"+G.settings.penaltyAmount+'.',
-    "You peaked too early. Lose $"+G.settings.penaltyAmount+'.',
-    "The table turned on you. Lose $"+G.settings.penaltyAmount+'.',
-    "Your vibe was off. Lose $"+G.settings.penaltyAmount+'.',
-    "You talked too much. Lose $"+G.settings.penaltyAmount+'.',
+    "Someone told your secrets. Lose $"+lossStr+'.',
+    "You peaked too early. Lose $"+lossStr+'.',
+    "The table turned on you. Lose $"+lossStr+'.',
+    "Your vibe was off. Lose $"+lossStr+'.',
+    "You talked too much. Lose $"+lossStr+'.',
   ];
   if (msgs.length === 0) msgs = defaults;
   const msg = msgs[Math.floor(Math.random()*msgs.length)];
-  const p = currentPlayer();
-  takeMoney(p, G.settings.penaltyAmount);
+  takeMoney(p, loss);
   renderSidebar();
 
   return `
@@ -4739,8 +4956,9 @@ function executeKillShot(targetId, targetName) {
   eliminatePlayer(target);
   showModifierFlash('💀','ELIMINATED',`${targetName} has been taken out by Kill Shot.`);
   document.getElementById('flash-continue-btn').onclick = () => { closeModifierFlash(); renderSidebar(); nextTurn(); };
-  // Mark used — Kill Shot is once-per-game
-  G.enabledWheelCats.delete('killShot');
+  // Mark used — Kill Shot is once-per-game. Tracked separately from user settings.
+  G.killShotUsed = true;
+  if (typeof rollVariableSlots === 'function') rollVariableSlots();
 }
 
 // ─── SECOND LIFE ───
@@ -4854,61 +5072,6 @@ function gauntletAnswer(correct) {
   document.getElementById('challenge-card').innerHTML = buildGauntletQuestion();
 }
 
-// ─── KILL SHOT ───
-function handleKillShot() {
-  const p = currentPlayer();
-  const targets = G.players.filter(pl => pl.alive && !pl.isGhost && pl.id !== p.id);
-  if (targets.length === 0) { nextTurn(); return; }
-
-  const targetBtns = targets.map(pl => `
-    <button class="vote-option" onclick="executeKillShot(${pl.id},'${pl.name.replace(/'/g,"\\'")}')">
-      Eliminate ${pl.name} ($${pl.balance.toLocaleString()})
-    </button>`).join('');
-
-  document.getElementById('challenge-card').style.display = 'block';
-  document.getElementById('challenge-card').innerHTML = `
-    <span class="challenge-type-badge" style="background:#B71C1C22;color:#EF9A9A;">💀 KILL SHOT</span>
-    <div class="challenge-question">Choose a player to eliminate. Once per game.</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">${targetBtns}</div>
-    <div style="margin-top:1rem;"><button class="btn btn-ghost" onclick="nextTurn()">Cancel</button></div>`;
-}
-
-function executeKillShot(targetId, targetName) {
-  const target = G.players.find(p => p.id === targetId);
-  if (!target) return;
-  eliminatePlayer(target);
-  showModifierFlash('💀','ELIMINATED',`${targetName} has been eliminated by Kill Shot.`);
-  document.getElementById('flash-continue-btn').onclick = () => { closeModifierFlash(); renderSidebar(); nextTurn(); };
-  // Mark used
-  G.enabledWheelCats.delete('killShot');
-}
-
-// ─── SECOND LIFE ───
-function handleSecondLife() {
-  if (G.ghosts.length === 0) {
-    showModifierFlash('💚','SECOND LIFE','No ghosts to resurrect right now.');
-    document.getElementById('flash-continue-btn').onclick = () => { closeModifierFlash(); nextTurn(); };
-    return;
-  }
-
-  const targetBtns = G.ghosts.map(g => `
-    <button class="vote-option" onclick="executeSecondLife(${g.id},'${g.name.replace(/'/g,"\\'")}')">
-      Resurrect ${g.name}
-    </button>`).join('');
-
-  document.getElementById('challenge-card').style.display = 'block';
-  document.getElementById('challenge-card').innerHTML = `
-    <span class="challenge-type-badge" style="background:#00695C22;color:#80CBC4;">💚 SECOND LIFE</span>
-    <div class="challenge-question">Choose a ghost to resurrect. They return with money based on the lowest balance.</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">${targetBtns}</div>`;
-}
-
-function executeSecondLife(ghostId, ghostName) {
-  resurrectGhost(ghostId);
-  showModifierFlash('💚','RESURRECTED!',`${ghostName} is back in the game!`);
-  document.getElementById('flash-continue-btn').onclick = () => { closeModifierFlash(); renderSidebar(); nextTurn(); };
-}
-
 function resurrectGhost(ghostId) {
   const ghost = G.ghosts.find(g => g.id === ghostId);
   if (!ghost) return;
@@ -4940,6 +5103,8 @@ function buildWildCard() {
   const options = shuffleArr(pool).slice(0,5);
   const p = currentPlayer();
   const payout = p ? getMilestonePayout(p.milestone + 1) * G.currentMultiplier : 0;
+  // Deny cost = the full payout. Chicken out, lose exactly what you could've won.
+  const denyCost = payout;
 
   const optHtml = options.map(o => `<button class="vote-option" onclick="selectWildCard('${o.replace(/'/g,"\\'")}')">🎭 ${o}</button>`).join('');
 
@@ -4947,7 +5112,7 @@ function buildWildCard() {
     <span class="challenge-type-badge" style="background:#AB47BC22;color:#CE93D8;">🃏 WILD CARD</span>
     <div class="challenge-question">Audience — pick your challenge:</div>
     <div style="margin:0 0 1rem;padding:10px 14px;background:rgba(255,217,61,0.1);border:2px solid var(--gold);border-radius:10px;font-family:var(--font-fun);text-align:center;font-size:14px;color:var(--gold-light);">
-      Complete: <b>+$${payout.toLocaleString()}</b>  ·  Deny: <b>-$${G.settings.penaltyAmount.toLocaleString()}</b>
+      Complete: <b>+$${payout.toLocaleString()}</b>  ·  Deny: <b>-$${denyCost.toLocaleString()}</b>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem;">${optHtml}</div>
     <div class="challenge-actions" style="justify-content:center;">
@@ -4958,13 +5123,14 @@ function buildWildCard() {
 function selectWildCard(option) {
   const p = currentPlayer();
   const payout = getMilestonePayout(p.milestone + 1) * G.currentMultiplier;
+  const denyCost = payout;
   const card = document.getElementById('challenge-card');
   card.innerHTML = `
     <span class="challenge-type-badge" style="background:#AB47BC22;color:#CE93D8;">🃏 WILD CARD</span>
     <div class="challenge-question" style="font-size:22px;font-weight:500;">${option}</div>
     <div style="margin:1rem 0 1.2rem;padding:12px 16px;background:rgba(255,217,61,0.12);border:2px solid var(--gold);border-radius:12px;text-align:center;">
       <div style="font-family:var(--font-fun);font-size:13px;color:var(--gold-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">Stakes</div>
-      <div style="font-family:var(--font-display);font-size:22px;color:var(--gold-light);">Complete: +$${payout.toLocaleString()}  ·  Deny: -$${G.settings.penaltyAmount.toLocaleString()}</div>
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--gold-light);">Complete: +$${payout.toLocaleString()}  ·  Deny: -$${denyCost.toLocaleString()}</div>
     </div>
     <div class="challenge-actions" style="margin-top:1rem;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <button class="btn btn-danger" onclick="denyWildCard()">😤 DENY — Flip Crybaby</button>
@@ -4986,34 +5152,24 @@ function completeWildCard() {
   nextTurn();
 }
 
-// Deny the Wild Card — flips the crybaby token onto the active player
+// Deny the Wild Card — you lose exactly what you could've won
 function denyWildCard() {
   const p = currentPlayer();
   if (!p) return;
+  const loss = getMilestonePayout(p.milestone + 1) * G.currentMultiplier;
   playSound('crybaby');
-  showModifierFlash('😤', 'CRYBABY!', `${p.name} denied the Wild Card. You take the penalty — lose $${G.settings.penaltyAmount.toLocaleString()}.`);
+  showModifierFlash('😤', 'DENIED!', `${p.name} chickened out. You forfeit the full prize — lose $${loss.toLocaleString()}.`);
   document.getElementById('flash-continue-btn').onclick = () => {
     closeModifierFlash();
-    takeMoney(p, G.settings.penaltyAmount);
-    showMoneyPop('-$'+G.settings.penaltyAmount.toLocaleString(), '#E53935');
+    takeMoney(p, loss);
+    showMoneyPop('-$'+loss.toLocaleString(), '#E53935');
+    G.currentMultiplier = 1;
     renderSidebar();
     nextTurn();
   };
 }
 
 // ─── GHOST ROUND ───
-function buildGhostRound() {
-  if (G.ghosts.length === 0) {
-    return `<div class="challenge-question" style="font-size:16px;">No ghosts in the game yet.</div><div class="challenge-actions"><button class="btn btn-ghost" onclick="nextTurn()">Continue →</button></div>`;
-  }
-  return `
-    <span class="challenge-type-badge" style="background:#6A1B9A22;color:#CE93D8;">👻 GHOST ROUND</span>
-    <div class="challenge-question">A ghost is being summoned. Open the ghost wheel.</div>
-    <div class="challenge-actions">
-      <button class="btn btn-gold" onclick="openGhostOverlay()">Open Ghost Wheel →</button>
-    </div>`;
-}
-
 // ─── GHOST WHEEL ───
 // Ghost phase now transforms the main game screen rather than opening a modal overlay.
 // The same wheel canvas draws ghost slots, a .ghost-phase body class reskins the UI.
@@ -5410,7 +5566,8 @@ function closeCrybabyOverlay() {
 function resolveCrybaby(playerId) {
   const player = G.players.find(p => p.id === playerId);
   if (!player) return;
-  const penalty = G.settings.penaltyAmount;
+  // Scales with the target's balance — same relative sting regardless of tier
+  const penalty = getBalancePenalty(player, 0.10);
   const heads = Math.random() < 0.5; // heads = pay, tails = safe
 
   const stage = document.getElementById('crybaby-stage');
@@ -5577,6 +5734,16 @@ function getScaledPenalty(player) {
   if (!player) return G.settings.penaltyAmount;
   const wouldHaveEarned = getMilestonePayout(player.milestone + 1);
   return Math.max(G.settings.penaltyAmount, Math.floor(wouldHaveEarned / 2));
+}
+
+// Balance-based penalty: takes a % of the player's current balance.
+// Use for Penalty card and Crybaby — always stings the same RELATIVE amount regardless of tier.
+// Floored at baseSettings so very early game (with ~$0) still has a nominal cost.
+function getBalancePenalty(player, pct) {
+  if (!player) return G.settings.penaltyAmount;
+  const base = G.settings.penaltyAmount;
+  const fromBalance = Math.floor((player.balance || 0) * pct);
+  return Math.max(base, fromBalance);
 }
 
 function checkWin(player) {
@@ -5874,6 +6041,32 @@ function renderSettingsScreen() {
   ['settings-starting-money','settings-penalty','settings-bounty-start','settings-bounty-inc','settings-steal-pct','settings-ghost-pot-pct'].forEach(id => {
     document.getElementById(id).onchange = saveGameSettings;
   });
+
+  renderSeenStats();
+}
+
+// Render the "how many questions are left per category" stats in the Settings screen
+function renderSeenStats() {
+  const el = document.getElementById('seen-questions-stats');
+  if (!el) return;
+  const typeLabels = {
+    trivia:'Trivia', mc:'Multiple Choice', math:'Math', hottake:'Hot Take',
+    pubdef:'Public Defender', penalty:'Penalty', wildcard:'Wild Card',
+    spooky:'Spooky Trivia', famousghosts:'Famous Ghosts'
+  };
+  const rows = [];
+  Object.keys(G.questionSets || {}).forEach(type => {
+    const sets = (G.questionSets[type] || []).filter(s => s.enabled);
+    let pool = [];
+    sets.forEach(s => pool = pool.concat(s.questions || []));
+    if (pool.length === 0) return;
+    const seen = (G.seenQuestions[type] || new Set()).size;
+    const remaining = pool.length - seen;
+    const label = typeLabels[type] || type;
+    const color = remaining === 0 ? '#FF4545' : remaining <= 2 ? '#FF8C32' : remaining <= 5 ? '#FFD93D' : 'var(--text2)';
+    rows.push(`<div style="display:flex;justify-content:space-between;padding:3px 0;color:${color};"><span>${label}</span><span>${remaining} / ${pool.length} fresh</span></div>`);
+  });
+  el.innerHTML = rows.length > 0 ? rows.join('') : '<em>No question sets loaded.</em>';
 }
 
 function saveGameSettings() {
@@ -7143,6 +7336,9 @@ function unlockAudio() {
 ['click','touchstart','keydown'].forEach(ev =>
   window.addEventListener(ev, unlockAudio, { once:true, passive:true })
 );
+
+// Restore seen questions from localStorage
+loadSeenQuestions();
 </script>
 </body>
 </html>
